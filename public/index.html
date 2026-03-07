@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Pzk Clicker</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Подключаем скрипт Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">PzkClicker</h1>
+
+      <!-- Счётчик монет -->
+      <div class="balance"><span id="coinBalance">0</span> PzkCoins</div>
+
+      <!-- Кликабельная монета -->
+      <div class="coin-wrapper">
+        <div class="coin" id="clickableCoin">
+          <!-- Здесь будет фото из CSS -->
+        </div>
+      </div>
+
+      <!-- Панель бустов -->
+      <div class="boosts-panel">
+        <h2>⚡️ Бусты</h2>
+        <div class="boosts-grid">
+          <div class="boost-item" id="boostAfk">
+            <h3>💤 AFK Кликер</h3>
+            <p>+1 монета/сек</p>
+            <p class="boost-price" id="afkPrice">10</p>
+            <button class="buy-btn" data-boost="afk">Купить</button>
+          </div>
+          <div class="boost-item" id="boostDouble">
+            <h3>2️⃣ Удвоение</h3>
+            <p>Клик ×2</p>
+            <p class="boost-price" id="doublePrice">50</p>
+            <button class="buy-btn" data-boost="double">Купить</button>
+          </div>
+          <div class="boost-item" id="boostRandom">
+            <h3>🎲 Рандом</h3>
+            <p>+бонус раз в 50 кликов</p>
+            <p class="boost-price" id="randomPrice">100</p>
+            <button class="buy-btn" data-boost="random">Купить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
