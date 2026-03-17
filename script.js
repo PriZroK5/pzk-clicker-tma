@@ -13,6 +13,9 @@ class GameState {
         this.luckBoost = 0;
         this.superAfkActive = false;
         this.magnetActive = false;
+        this.maxEnergy = 100;
+        this.currentEnergy = 100;
+        this.energyBoost = 0;
         this.load();
     }
 
@@ -30,6 +33,9 @@ class GameState {
                 this.luckBoost = data.luckBoost || 0;
                 this.superAfkActive = data.superAfkActive || false;
                 this.magnetActive = data.magnetActive || false;
+                this.maxEnergy = data.maxEnergy || 100;
+                this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
+                this.energyBoost = data.energyBoost || 0;
             } catch (e) {
                 console.error('Load error', e);
             }
@@ -46,9 +52,28 @@ class GameState {
             powerBoost: this.powerBoost,
             luckBoost: this.luckBoost,
             superAfkActive: this.superAfkActive,
-            magnetActive: this.magnetActive
+            magnetActive: this.magnetActive,
+            maxEnergy: this.maxEnergy,
+            currentEnergy: this.currentEnergy,
+            energyBoost: this.energyBoost
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
+    }
+
+    useEnergy(amount) {
+        if (this.currentEnergy >= amount) {
+            this.currentEnergy -= amount;
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    addMaxEnergy(amount) {
+        this.maxEnergy += amount;
+        this.currentEnergy = this.maxEnergy;
+        this.energyBoost += amount;
+        this.save();
     }
 }
 
@@ -87,7 +112,10 @@ class AfkBoost extends Boost {
                 let gain = 1;
                 if (this.gameState.superAfkActive) gain += 3;
                 if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
-                this.gameState.coins += gain;
+                if (this.gameState.useEnergy(1)) {
+                    this.gameState.coins += gain;
+                    createFloatingNumber(gain);
+                }
                 this.gameState.save();
                 updateUI();
             }, 1000);
@@ -145,6 +173,24 @@ class SuperAfkBoost extends Boost {
     }
 }
 
+class EnergyBoost extends Boost {
+    constructor(gameState) {
+        super(400, gameState);
+    }
+    apply() {
+        this.gameState.addMaxEnergy(50);
+    }
+}
+
+class SuperEnergyBoost extends Boost {
+    constructor(gameState) {
+        super(800, gameState);
+    }
+    apply() {
+        this.gameState.addMaxEnergy(100);
+    }
+}
+
 class MagnetBoost extends Boost {
     constructor(gameState) {
         super(1000, gameState);
@@ -163,6 +209,8 @@ const boosts = {
     power: new PowerBoost(gameState),
     luck: new LuckBoost(gameState),
     superAfk: new SuperAfkBoost(gameState),
+    energy: new EnergyBoost(gameState),
+    superEnergy: new SuperEnergyBoost(gameState),
     magnet: new MagnetBoost(gameState)
 };
 
@@ -170,25 +218,28 @@ const coinBalanceEl = document.getElementById('coinBalance');
 const clickableCoin = document.getElementById('clickableCoin');
 const coinWrapper = document.getElementById('coinWrapper');
 const floatingContainer = document.getElementById('floatingNumbers');
+const energyDisplay = document.getElementById('energyDisplay');
+const energyFill = document.getElementById('energyFill');
 const afkPriceEl = document.getElementById('afkPrice');
 const doublePriceEl = document.getElementById('doublePrice');
 const randomPriceEl = document.getElementById('randomPrice');
 const powerPriceEl = document.getElementById('powerPrice');
 const luckPriceEl = document.getElementById('luckPrice');
 const superAfkPriceEl = document.getElementById('superAfkPrice');
+const energyPriceEl = document.getElementById('energyPrice');
+const superEnergyPriceEl = document.getElementById('superEnergyPrice');
 const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
-const selectBasicBtn = document.getElementById('selectBasic');
-const selectVipBtn = document.getElementById('selectVip');
-const basicRoulette = document.getElementById('basicRoulette');
-const vipRoulette = document.getElementById('vipRoulette');
 const basicWheel = document.getElementById('basicWheel');
 const vipWheel = document.getElementById('vipWheel');
 const spinBasicBtn = document.getElementById('spinBasic');
 const spinVipBtn = document.getElementById('spinVip');
-const rouletteResult = document.getElementById('rouletteResult');
+const basicResult = document.getElementById('basicResult');
+const vipResult = document.getElementById('vipResult');
+
+let noEnergyMessage = null;
 
 function createFloatingNumber(value) {
     const num = document.createElement('div');
@@ -208,6 +259,22 @@ function createFloatingNumber(value) {
     }, 1000);
 }
 
+function showNoEnergyMessage() {
+    if (noEnergyMessage) return;
+    
+    noEnergyMessage = document.createElement('div');
+    noEnergyMessage.className = 'no-energy-message';
+    noEnergyMessage.textContent = '⚡ НЕТ ЭНЕРГИИ ⚡';
+    coinWrapper.appendChild(noEnergyMessage);
+    
+    setTimeout(() => {
+        if (noEnergyMessage) {
+            noEnergyMessage.remove();
+            noEnergyMessage = null;
+        }
+    }, 1500);
+}
+
 tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
@@ -218,24 +285,18 @@ tabBtns.forEach(btn => {
     });
 });
 
-if (selectBasicBtn && selectVipBtn) {
-    selectBasicBtn.addEventListener('click', () => {
-        selectBasicBtn.classList.add('active');
-        selectVipBtn.classList.remove('active');
-        basicRoulette.classList.add('active');
-        vipRoulette.classList.remove('active');
-    });
-
-    selectVipBtn.addEventListener('click', () => {
-        selectVipBtn.classList.add('active');
-        selectBasicBtn.classList.remove('active');
-        vipRoulette.classList.add('active');
-        basicRoulette.classList.remove('active');
-    });
-}
-
 function updateUI() {
     coinBalanceEl.textContent = gameState.coins;
+    
+    const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
+    energyDisplay.textContent = `${gameState.currentEnergy}/${gameState.maxEnergy}`;
+    energyFill.style.width = `${energyPercent}%`;
+    
+    if (gameState.currentEnergy === 0) {
+        coinWrapper.classList.add('disabled');
+    } else {
+        coinWrapper.classList.remove('disabled');
+    }
     
     if (afkPriceEl) afkPriceEl.textContent = boosts.afk.price;
     if (doublePriceEl) doublePriceEl.textContent = boosts.double.price;
@@ -243,6 +304,8 @@ function updateUI() {
     if (powerPriceEl) powerPriceEl.textContent = boosts.power.price;
     if (luckPriceEl) luckPriceEl.textContent = boosts.luck.price;
     if (superAfkPriceEl) superAfkPriceEl.textContent = boosts.superAfk.price;
+    if (energyPriceEl) energyPriceEl.textContent = boosts.energy.price;
+    if (superEnergyPriceEl) superEnergyPriceEl.textContent = boosts.superEnergy.price;
     if (magnetPriceEl) magnetPriceEl.textContent = boosts.magnet.price;
     
     buyButtons.forEach(btn => {
@@ -255,6 +318,8 @@ function updateUI() {
         if (boostType === 'power') price = boosts.power.price;
         if (boostType === 'luck') price = boosts.luck.price;
         if (boostType === 'superAfk') price = boosts.superAfk.price;
+        if (boostType === 'energy') price = boosts.energy.price;
+        if (boostType === 'superEnergy') price = boosts.superEnergy.price;
         if (boostType === 'magnet') price = boosts.magnet.price;
         
         btn.disabled = gameState.coins < price;
@@ -262,23 +327,31 @@ function updateUI() {
 }
 
 clickableCoin.addEventListener('click', () => {
+    if (gameState.currentEnergy <= 0) {
+        showNoEnergyMessage();
+        tg.HapticFeedback.notificationOccurred('error');
+        return;
+    }
+    
     clickableCoin.classList.add('coin-animate');
     setTimeout(() => clickableCoin.classList.remove('coin-animate'), 300);
 
     let gain = 1 * gameState.multiplier;
     gain += gameState.powerBoost;
     
-    gameState.coins += gain;
-    createFloatingNumber(gain);
-    
-    if (gameState.randomBoostActive) {
-        gameState.clickCount++;
-        if (gameState.clickCount >= 50) {
-            const bonus = Math.floor(Math.random() * 21) + 5;
-            gameState.coins += bonus;
-            createFloatingNumber(bonus);
-            gameState.clickCount = 0;
-            tg.HapticFeedback.impactOccurred('medium');
+    if (gameState.useEnergy(1)) {
+        gameState.coins += gain;
+        createFloatingNumber(gain);
+        
+        if (gameState.randomBoostActive) {
+            gameState.clickCount++;
+            if (gameState.clickCount >= 50) {
+                const bonus = Math.floor(Math.random() * 21) + 5;
+                gameState.coins += bonus;
+                createFloatingNumber(bonus);
+                gameState.clickCount = 0;
+                tg.HapticFeedback.impactOccurred('medium');
+            }
         }
     }
 
@@ -301,19 +374,21 @@ buyButtons.forEach(btn => {
 });
 
 function spinRoulette(type) {
-    let cost, wheel, minChance, maxChance;
+    let cost, wheel, resultEl;
     const luckBonus = gameState.luckBoost;
     
     if (type === 'basic') {
         cost = 150;
         wheel = basicWheel;
+        resultEl = basicResult;
     } else {
         cost = 1000;
         wheel = vipWheel;
+        resultEl = vipResult;
     }
 
     if (gameState.coins < cost) {
-        rouletteResult.textContent = '❌ НЕДОСТАТОЧНО МОНЕТ';
+        if (resultEl) resultEl.textContent = '❌ НЕДОСТАТОЧНО МОНЕТ';
         tg.HapticFeedback.notificationOccurred('error');
         return;
     }
@@ -353,7 +428,7 @@ function spinRoulette(type) {
         gameState.coins += winAmount;
         gameState.save();
         
-        rouletteResult.textContent = `🎉 ВЫ ВЫИГРАЛИ ${winAmount} PZK!`;
+        if (resultEl) resultEl.textContent = `🎉 ВЫ ВЫИГРАЛИ ${winAmount} PZK!`;
         createFloatingNumber(winAmount);
         tg.HapticFeedback.notificationOccurred('success');
         updateUI();
