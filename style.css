@@ -367,11 +367,44 @@ body {
     border-color: rgba(0, 243, 255, 0.3);
 }
 
+.roulette-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.roulette-selector-btn {
+    background: transparent;
+    color: #fff;
+    border: 1px solid var(--neon-blue);
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.roulette-selector-btn.active {
+    background: var(--neon-blue);
+    color: var(--neon-dark);
+    box-shadow: var(--neon-glow);
+}
+
 .roulette-container {
+    display: none;
     position: relative;
     width: 280px;
     height: 280px;
     margin: 20px auto;
+}
+
+.roulette-container.active {
+    display: block;
 }
 
 .roulette-wheel {
@@ -398,11 +431,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #fff;
     text-shadow: var(--neon-glow);
     clip-path: polygon(0% 0%, 100% 0%, 100% 100%);
+    padding-right: 25px;
+    box-sizing: border-box;
 }
 
 .wheel-segment:nth-child(odd) {
@@ -423,37 +458,16 @@ body {
     z-index: 10;
 }
 
-.roulette-controls {
-    display: flex;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.roulette-card {
-    flex: 1;
-    background: rgba(0, 243, 255, 0.05);
-    border: 1px solid var(--neon-blue);
-    border-radius: 15px;
-    padding: 15px;
+.roulette-info {
+    margin-top: 20px;
     text-align: center;
 }
 
-.roulette-card h3 {
-    font-size: 16px;
+.roulette-info p {
     color: var(--neon-blue);
+    font-size: 16px;
     margin-bottom: 10px;
     text-shadow: var(--neon-glow);
-}
-
-.roulette-card p {
-    font-size: 12px;
-    margin: 5px 0;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.roulette-btn {
-    margin-top: 10px;
-    font-size: 12px;
 }
 
 .roulette-result {
@@ -470,13 +484,4 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.wheel-spinning {
-    animation: spinWheel 3s cubic-bezier(0.25, 0.1, 0.15, 1);
-}
-
-@keyframes spinWheel {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(1440deg); }
 }
