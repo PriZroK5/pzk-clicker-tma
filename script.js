@@ -19,7 +19,6 @@ class GameState {
         this.currentEnergy = 100;
         this.energyLevel = 1;
         this.energyMultiplier = 2;
-        this.minigameAvailable = true;
         this.minigameAttempts = 1;
         this.minigameLastPlayed = null;
         this.load();
@@ -43,7 +42,7 @@ class GameState {
                 this.magnetActive = data.magnetActive || false;
                 this.energyLevel = data.energyLevel || 1;
                 this.energyMultiplier = data.energyMultiplier || 2;
-                this.minigameAttempts = data.minigameAttempts || 1;
+                this.minigameAttempts = data.minigameAttempts !== undefined ? data.minigameAttempts : 1;
                 this.minigameLastPlayed = data.minigameLastPlayed || null;
                 
                 this.checkDailyReset();
@@ -205,17 +204,18 @@ class AfkBoost extends Boost {
         return upgraded;
     }
     startAfkInterval() {
-        if (!window.afkInterval) {
-            window.afkInterval = setInterval(() => {
-                if (this.gameState.afkActive) {
-                    const gain = this.gameState.getAfkGain();
-                    this.gameState.coins += gain;
-                    createFloatingNumber(gain);
-                    this.gameState.save();
-                    updateUI();
-                }
-            }, 1000);
+        if (window.afkInterval) {
+            clearInterval(window.afkInterval);
         }
+        window.afkInterval = setInterval(() => {
+            if (this.gameState.afkActive) {
+                const gain = this.gameState.getAfkGain();
+                this.gameState.coins += gain;
+                createFloatingNumber(gain);
+                this.gameState.save();
+                updateUI();
+            }
+        }, 1000);
     }
 }
 
@@ -265,6 +265,11 @@ class SuperAfkBoost extends Boost {
     }
     apply() {
         this.gameState.superAfkActive = true;
+        if (this.gameState.afkActive) {
+            clearInterval(window.afkInterval);
+            window.afkInterval = null;
+            new AfkBoost(this.gameState).startAfkInterval();
+        }
         return true;
     }
 }
@@ -313,7 +318,7 @@ const boosts = {
 
 const coinBalanceEl = document.getElementById('coinBalance');
 const clickableGhost = document.getElementById('clickableGhost');
-const coinWrapper = document.getElementById('coinWrapper');
+const ghostWrapper = document.getElementById('ghostWrapper');
 const floatingContainer = document.getElementById('floatingNumbers');
 const energyDisplay = document.getElementById('energyDisplay');
 const energyFill = document.getElementById('energyFill');
@@ -348,11 +353,12 @@ const startMinigameBtn = document.getElementById('startMinigame');
 const minigamePreview = document.getElementById('minigamePreview');
 const minigameBoard = document.getElementById('minigameBoard');
 const minigameOverlay = document.getElementById('minigameOverlay');
-const winAmount = document.getElementById('winAmount');
+const winAmountEl = document.getElementById('winAmount');
 const minigameCards = document.querySelectorAll('.minigame-card');
 const minigameStatus = document.getElementById('minigameStatus');
 
 let noEnergyMessage = null;
+let minigameActive = false;
 
 function createFloatingNumber(value) {
     const num = document.createElement('div');
@@ -378,7 +384,7 @@ function showNoEnergyMessage() {
     noEnergyMessage = document.createElement('div');
     noEnergyMessage.className = 'no-energy-message';
     noEnergyMessage.textContent = '⚡ НЕТ ЭНЕРГИИ ⚡';
-    coinWrapper.appendChild(noEnergyMessage);
+    ghostWrapper.appendChild(noEnergyMessage);
     
     setTimeout(() => {
         if (noEnergyMessage) {
@@ -406,10 +412,10 @@ function updateMinigameUI() {
     if (minigameStatus) {
         if (gameState.minigameAttempts > 0) {
             minigameStatus.innerHTML = `🎮 Доступно попыток: ${gameState.minigameAttempts}`;
-            startMinigameBtn.disabled = false;
+            if (startMinigameBtn) startMinigameBtn.disabled = false;
         } else {
             minigameStatus.innerHTML = '❌ Сегодня уже играли. Купите попытку в магазине!';
-            startMinigameBtn.disabled = true;
+            if (startMinigameBtn) startMinigameBtn.disabled = true;
         }
     }
     
@@ -423,8 +429,10 @@ function updateMinigameUI() {
 }
 
 function startMinigame() {
+    if (minigameActive) return;
     if (!gameState.playMinigame()) return;
     
+    minigameActive = true;
     minigamePreview.style.display = 'none';
     minigameBoard.style.display = 'block';
     
@@ -437,17 +445,19 @@ function startMinigame() {
         card.classList.remove('disabled');
         card.dataset.value = values[index];
     });
+    
+    updateMinigameUI();
 }
 
 minigameCards.forEach(card => {
     card.addEventListener('click', () => {
-        if (card.classList.contains('disabled')) return;
+        if (!minigameActive || card.classList.contains('disabled')) return;
         
         const winValue = parseInt(card.dataset.value);
         
         minigameCards.forEach(c => c.classList.add('disabled'));
         
-        winAmount.textContent = `+${winValue}`;
+        winAmountEl.textContent = `+${winValue}`;
         minigameOverlay.style.display = 'flex';
         
         gameState.coins += winValue;
@@ -456,11 +466,11 @@ minigameCards.forEach(card => {
         
         setTimeout(() => {
             minigameOverlay.style.display = 'none';
-            
-            document.querySelector('[data-tab="clicker"]').click();
-            
             minigameBoard.style.display = 'none';
             minigamePreview.style.display = 'block';
+            minigameActive = false;
+            
+            document.querySelector('[data-tab="clicker"]').click();
             
             updateMinigameUI();
         }, 2000);
@@ -472,13 +482,13 @@ function updateUI() {
     
     gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
-    energyDisplay.textContent = `${gameState.currentEnergy}/${Math.floor(gameState.maxEnergy)}`;
+    energyDisplay.textContent = `${Math.floor(gameState.currentEnergy)}/${Math.floor(gameState.maxEnergy)}`;
     energyFill.style.width = `${energyPercent}%`;
     
     if (gameState.currentEnergy <= 0) {
-        coinWrapper.classList.add('disabled');
+        ghostWrapper.classList.add('disabled');
     } else {
-        coinWrapper.classList.remove('disabled');
+        ghostWrapper.classList.remove('disabled');
     }
     
     if (afkLevelEl) afkLevelEl.textContent = gameState.afkLevel;
@@ -509,7 +519,7 @@ function updateUI() {
         
         if (boostType === 'afk') {
             price = boosts.afk.price;
-            canBuy = gameState.afkLevel < 10;
+            canBuy = true;
         }
         if (boostType === 'double') price = boosts.double.price;
         if (boostType === 'random') price = boosts.random.price;
@@ -691,13 +701,16 @@ if (spinVipBtn) {
     spinVipBtn.addEventListener('click', () => spinRoulette('vip'));
 }
 
+// Инициализация
 updateUI();
 updateMinigameUI();
 
-if (gameState.afkActive && !window.afkInterval) {
+// Запуск AFK интервала если активен
+if (gameState.afkActive) {
     new AfkBoost(gameState).startAfkInterval();
 }
 
+// Обновление UI каждые 100мс
 setInterval(() => {
     updateUI();
 }, 100);
