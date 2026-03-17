@@ -312,7 +312,7 @@ const boosts = {
 };
 
 const coinBalanceEl = document.getElementById('coinBalance');
-const clickableCoin = document.getElementById('clickableCoin');
+const clickableGhost = document.getElementById('clickableGhost');
 const coinWrapper = document.getElementById('coinWrapper');
 const floatingContainer = document.getElementById('floatingNumbers');
 const energyDisplay = document.getElementById('energyDisplay');
@@ -545,15 +545,15 @@ function updateUI() {
     }
 }
 
-clickableCoin.addEventListener('click', () => {
+clickableGhost.addEventListener('click', () => {
     if (gameState.currentEnergy <= 0) {
         showNoEnergyMessage();
         tg.HapticFeedback.notificationOccurred('error');
         return;
     }
     
-    clickableCoin.classList.add('coin-animate');
-    setTimeout(() => clickableCoin.classList.remove('coin-animate'), 300);
+    clickableGhost.classList.add('ghost-animate');
+    setTimeout(() => clickableGhost.classList.remove('ghost-animate'), 300);
 
     let gain = 1 * gameState.multiplier;
     gain += gameState.powerBoost;
