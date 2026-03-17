@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pzk Clicker Neon</title>
+    <title>Pzk Clicker</title>
     <meta name="theme-color" content="#0a0f1e">
     <meta name="color-scheme" content="dark">
     <link rel="stylesheet" href="style.css">
@@ -21,10 +21,21 @@
             <span class="currency">PZK</span>
         </div>
 
+        <div class="energy-bar-container">
+            <div class="energy-bar-label">
+                <span>⚡ ЭНЕРГИЯ</span>
+                <span id="energyDisplay">100/100</span>
+            </div>
+            <div class="energy-bar">
+                <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+            </div>
+        </div>
+
         <div class="tabs">
             <button class="tab-btn active" data-tab="clicker">🪙 КЛИКЕР</button>
             <button class="tab-btn" data-tab="shop">🏪 МАГАЗИН</button>
-            <button class="tab-btn" data-tab="roulette">🎲 РУЛЕТКА</button>
+            <button class="tab-btn" data-tab="roulette-basic">🎲 PZK РУЛЕТКА</button>
+            <button class="tab-btn" data-tab="roulette-vip">👑 VIP РУЛЕТКА</button>
         </div>
 
         <div id="clicker-tab" class="tab-content active">
@@ -36,7 +47,7 @@
             </div>
 
             <div class="boosts-panel">
-                <h2 class="neon-subtitle">⚡ PZK БУСТЫ ⚡</h2>
+                <h2 class="neon-subtitle">⚡ PZK УСИЛИТЕЛИ ⚡</h2>
                 <div class="boosts-grid">
                     <div class="neon-boost-item" id="boostAfk">
                         <div class="boost-glow"></div>
@@ -85,6 +96,18 @@
                     <button class="neon-btn" data-boost="superAfk">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
+                    <h3>🔋 БАТАРЕЙКА</h3>
+                    <p>+50 макс. энергии</p>
+                    <div class="shop-price" id="energyPrice">400</div>
+                    <button class="neon-btn" data-boost="energy">КУПИТЬ</button>
+                </div>
+                <div class="neon-shop-item">
+                    <h3>⚡ МОЛНИЯ</h3>
+                    <p>+100 макс. энергии</p>
+                    <div class="shop-price" id="superEnergyPrice">800</div>
+                    <button class="neon-btn" data-boost="superEnergy">КУПИТЬ</button>
+                </div>
+                <div class="neon-shop-item">
                     <h3>🎰 МАГНИТ</h3>
                     <p>+10% к монетам</p>
                     <div class="shop-price" id="magnetPrice">1000</div>
@@ -93,15 +116,10 @@
             </div>
         </div>
 
-        <div id="roulette-tab" class="tab-content">
+        <div id="roulette-basic-tab" class="tab-content">
             <h2 class="neon-subtitle">🎲 PZK РУЛЕТКА</h2>
             
-            <div class="roulette-selector">
-                <button class="roulette-selector-btn active" id="selectBasic">СТАРТОВАЯ</button>
-                <button class="roulette-selector-btn" id="selectVip">VIP</button>
-            </div>
-
-            <div id="basicRoulette" class="roulette-container active">
+            <div class="roulette-container">
                 <div class="roulette-wheel" id="basicWheel">
                     <div class="wheel-segment" style="--i:0">50</div>
                     <div class="wheel-segment" style="--i:1">100</div>
@@ -113,13 +131,21 @@
                     <div class="wheel-segment" style="--i:7">0</div>
                 </div>
                 <div class="wheel-pointer"></div>
-                <div class="roulette-info">
-                    <p>Ставка: 150 PZK</p>
-                    <button class="neon-btn roulette-btn" id="spinBasic">КРУТИТЬ</button>
-                </div>
             </div>
 
-            <div id="vipRoulette" class="roulette-container">
+            <div class="roulette-info">
+                <p class="roulette-stake">СТАВКА: 150 PZK</p>
+                <p class="roulette-range">ВЫИГРЫШ: 50 - 1000 PZK</p>
+                <button class="neon-btn roulette-btn" id="spinBasic">КРУТИТЬ</button>
+            </div>
+
+            <div id="basicResult" class="roulette-result"></div>
+        </div>
+
+        <div id="roulette-vip-tab" class="tab-content">
+            <h2 class="neon-subtitle">👑 VIP РУЛЕТКА</h2>
+            
+            <div class="roulette-container">
                 <div class="roulette-wheel" id="vipWheel">
                     <div class="wheel-segment" style="--i:0">2000</div>
                     <div class="wheel-segment" style="--i:1">2500</div>
@@ -131,13 +157,15 @@
                     <div class="wheel-segment" style="--i:7">1000</div>
                 </div>
                 <div class="wheel-pointer"></div>
-                <div class="roulette-info">
-                    <p>Ставка: 1000 PZK</p>
-                    <button class="neon-btn roulette-btn" id="spinVip">КРУТИТЬ VIP</button>
-                </div>
             </div>
 
-            <div id="rouletteResult" class="roulette-result"></div>
+            <div class="roulette-info">
+                <p class="roulette-stake">СТАВКА: 1000 PZK</p>
+                <p class="roulette-range">ВЫИГРЫШ: 2000 - 5000 PZK</p>
+                <button class="neon-btn roulette-btn" id="spinVip">КРУТИТЬ VIP</button>
+            </div>
+
+            <div id="vipResult" class="roulette-result"></div>
         </div>
     </div>
     
