@@ -7,6 +7,8 @@ class GameState {
         this.coins = 0;
         this.multiplier = 1;
         this.afkActive = false;
+        this.afkLevel = 1;
+        this.afkBaseGain = 1;
         this.randomBoostActive = false;
         this.clickCount = 0;
         this.powerBoost = 0;
@@ -15,9 +17,8 @@ class GameState {
         this.magnetActive = false;
         this.maxEnergy = 100;
         this.currentEnergy = 100;
-        this.energyLevel1 = false;
-        this.energyLevel2 = false;
-        this.energyLevel3 = false;
+        this.energyLevel = 1;
+        this.energyMultiplier = 2;
         this.load();
     }
 
@@ -29,15 +30,16 @@ class GameState {
                 this.coins = data.coins || 0;
                 this.multiplier = data.multiplier || 1;
                 this.afkActive = data.afkActive || false;
+                this.afkLevel = data.afkLevel || 1;
+                this.afkBaseGain = data.afkBaseGain || 1;
                 this.randomBoostActive = data.randomBoostActive || false;
                 this.clickCount = data.clickCount || 0;
                 this.powerBoost = data.powerBoost || 0;
                 this.luckBoost = data.luckBoost || 0;
                 this.superAfkActive = data.superAfkActive || false;
                 this.magnetActive = data.magnetActive || false;
-                this.energyLevel1 = data.energyLevel1 || false;
-                this.energyLevel2 = data.energyLevel2 || false;
-                this.energyLevel3 = data.energyLevel3 || false;
+                this.energyLevel = data.energyLevel || 1;
+                this.energyMultiplier = data.energyMultiplier || 2;
                 
                 this.updateMaxEnergy();
                 this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
@@ -49,10 +51,7 @@ class GameState {
     }
 
     updateMaxEnergy() {
-        this.maxEnergy = 100;
-        if (this.energyLevel1) this.maxEnergy += 50;
-        if (this.energyLevel2) this.maxEnergy += 100;
-        if (this.energyLevel3) this.maxEnergy += 200;
+        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
     }
 
     save() {
@@ -61,15 +60,16 @@ class GameState {
             coins: this.coins,
             multiplier: this.multiplier,
             afkActive: this.afkActive,
+            afkLevel: this.afkLevel,
+            afkBaseGain: this.afkBaseGain,
             randomBoostActive: this.randomBoostActive,
             clickCount: this.clickCount,
             powerBoost: this.powerBoost,
             luckBoost: this.luckBoost,
             superAfkActive: this.superAfkActive,
             magnetActive: this.magnetActive,
-            energyLevel1: this.energyLevel1,
-            energyLevel2: this.energyLevel2,
-            energyLevel3: this.energyLevel3,
+            energyLevel: this.energyLevel,
+            energyMultiplier: this.energyMultiplier,
             currentEnergy: this.currentEnergy,
             maxEnergy: this.maxEnergy
         };
@@ -85,24 +85,44 @@ class GameState {
         return false;
     }
 
-    addMaxEnergy(level) {
-        if (level === 1 && !this.energyLevel1) {
-            this.energyLevel1 = true;
-        } else if (level === 2 && !this.energyLevel2) {
-            this.energyLevel2 = true;
-        } else if (level === 3 && !this.energyLevel3) {
-            this.energyLevel3 = true;
+    chargeEnergy(percent) {
+        const cost = Math.floor(this.maxEnergy * percent * 0.1);
+        if (this.coins >= cost) {
+            this.coins -= cost;
+            this.currentEnergy = Math.min(this.currentEnergy + Math.floor(this.maxEnergy * percent), this.maxEnergy);
+            this.save();
+            return true;
         }
-        this.updateMaxEnergy();
-        this.currentEnergy = this.maxEnergy;
-        this.save();
+        return false;
     }
 
-    canBuyEnergyLevel(level) {
-        if (level === 1) return !this.energyLevel1;
-        if (level === 2) return !this.energyLevel2;
-        if (level === 3) return !this.energyLevel3;
+    upgradeEnergy() {
+        const cost = this.getEnergyUpgradeCost();
+        if (this.coins >= cost) {
+            this.coins -= cost;
+            this.energyLevel++;
+            this.updateMaxEnergy();
+            this.currentEnergy = this.maxEnergy;
+            this.save();
+            return true;
+        }
         return false;
+    }
+
+    getEnergyUpgradeCost() {
+        return 300 * Math.pow(2, this.energyLevel - 1);
+    }
+
+    getAfkGain() {
+        let gain = this.afkBaseGain;
+        if (this.superAfkActive) gain += 3;
+        if (this.magnetActive) gain = Math.floor(gain * 1.1);
+        return gain * this.afkLevel;
+    }
+
+    upgradeAfk() {
+        this.afkLevel++;
+        this.save();
     }
 }
 
@@ -127,26 +147,22 @@ class Boost {
 
 class AfkBoost extends Boost {
     constructor(gameState) {
-        super(10, gameState);
+        super(10 * Math.pow(2, gameState.afkLevel - 1), gameState);
     }
     apply() {
         if (!this.gameState.afkActive) {
             this.gameState.afkActive = true;
-            this.startAfkInterval();
         }
+        this.gameState.upgradeAfk();
+        this.startAfkInterval();
     }
     startAfkInterval() {
         if (!window.afkInterval) {
             window.afkInterval = setInterval(() => {
                 if (this.gameState.afkActive) {
-                    let gain = 1;
-                    if (this.gameState.superAfkActive) gain += 3;
-                    if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
-                    
-                    // AFK кликер НЕ тратит энергию!
+                    const gain = this.gameState.getAfkGain();
                     this.gameState.coins += gain;
                     createFloatingNumber(gain);
-                    
                     this.gameState.save();
                     updateUI();
                 }
@@ -197,38 +213,15 @@ class SuperAfkBoost extends Boost {
     }
     apply() {
         this.gameState.superAfkActive = true;
-        if (this.gameState.afkActive) {
-            clearInterval(window.afkInterval);
-            window.afkInterval = null;
-            new AfkBoost(this.gameState).startAfkInterval();
-        }
     }
 }
 
-class EnergyLevel1Boost extends Boost {
+class EnergyUpgradeBoost extends Boost {
     constructor(gameState) {
-        super(200, gameState);
+        super(gameState.getEnergyUpgradeCost(), gameState);
     }
     apply() {
-        this.gameState.addMaxEnergy(1);
-    }
-}
-
-class EnergyLevel2Boost extends Boost {
-    constructor(gameState) {
-        super(500, gameState);
-    }
-    apply() {
-        this.gameState.addMaxEnergy(2);
-    }
-}
-
-class EnergyLevel3Boost extends Boost {
-    constructor(gameState) {
-        super(1000, gameState);
-    }
-    apply() {
-        this.gameState.addMaxEnergy(3);
+        this.gameState.upgradeEnergy();
     }
 }
 
@@ -250,9 +243,7 @@ const boosts = {
     power: new PowerBoost(gameState),
     luck: new LuckBoost(gameState),
     superAfk: new SuperAfkBoost(gameState),
-    energy1: new EnergyLevel1Boost(gameState),
-    energy2: new EnergyLevel2Boost(gameState),
-    energy3: new EnergyLevel3Boost(gameState),
+    energyUpgrade: new EnergyUpgradeBoost(gameState),
     magnet: new MagnetBoost(gameState)
 };
 
@@ -262,15 +253,19 @@ const coinWrapper = document.getElementById('coinWrapper');
 const floatingContainer = document.getElementById('floatingNumbers');
 const energyDisplay = document.getElementById('energyDisplay');
 const energyFill = document.getElementById('energyFill');
+const afkLevelEl = document.getElementById('afkLevel');
+const afkIncomeEl = document.getElementById('afkIncome');
+const multiplierDisplay = document.getElementById('multiplierDisplay');
+const afkGainEl = document.getElementById('afkGain');
 const afkPriceEl = document.getElementById('afkPrice');
 const doublePriceEl = document.getElementById('doublePrice');
 const randomPriceEl = document.getElementById('randomPrice');
 const powerPriceEl = document.getElementById('powerPrice');
 const luckPriceEl = document.getElementById('luckPrice');
 const superAfkPriceEl = document.getElementById('superAfkPrice');
-const energy1PriceEl = document.getElementById('energy1Price');
-const energy2PriceEl = document.getElementById('energy2Price');
-const energy3PriceEl = document.getElementById('energy3Price');
+const energyLevelEl = document.getElementById('energyLevel');
+const energyMultEl = document.getElementById('energyMult');
+const energyUpgradePriceEl = document.getElementById('energyUpgradePrice');
 const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -281,6 +276,8 @@ const spinBasicBtn = document.getElementById('spinBasic');
 const spinVipBtn = document.getElementById('spinVip');
 const basicResult = document.getElementById('basicResult');
 const vipResult = document.getElementById('vipResult');
+const chargeHalfBtn = document.getElementById('chargeHalf');
+const chargeFullBtn = document.getElementById('chargeFull');
 
 let noEnergyMessage = null;
 
@@ -342,15 +339,23 @@ function updateUI() {
         coinWrapper.classList.remove('disabled');
     }
     
+    if (afkLevelEl) afkLevelEl.textContent = gameState.afkLevel;
+    if (afkIncomeEl) afkIncomeEl.textContent = `${gameState.getAfkGain()}/сек`;
+    if (multiplierDisplay) multiplierDisplay.textContent = `${gameState.multiplier}x`;
+    if (afkGainEl) afkGainEl.textContent = gameState.getAfkGain();
+    
+    boosts.afk.price = 10 * Math.pow(2, gameState.afkLevel - 1);
+    boosts.energyUpgrade.price = gameState.getEnergyUpgradeCost();
+    
     if (afkPriceEl) afkPriceEl.textContent = boosts.afk.price;
     if (doublePriceEl) doublePriceEl.textContent = boosts.double.price;
     if (randomPriceEl) randomPriceEl.textContent = boosts.random.price;
     if (powerPriceEl) powerPriceEl.textContent = boosts.power.price;
     if (luckPriceEl) luckPriceEl.textContent = boosts.luck.price;
     if (superAfkPriceEl) superAfkPriceEl.textContent = boosts.superAfk.price;
-    if (energy1PriceEl) energy1PriceEl.textContent = boosts.energy1.price;
-    if (energy2PriceEl) energy2PriceEl.textContent = boosts.energy2.price;
-    if (energy3PriceEl) energy3PriceEl.textContent = boosts.energy3.price;
+    if (energyLevelEl) energyLevelEl.textContent = gameState.energyLevel;
+    if (energyMultEl) energyMultEl.textContent = gameState.energyMultiplier;
+    if (energyUpgradePriceEl) energyUpgradePriceEl.textContent = boosts.energyUpgrade.price;
     if (magnetPriceEl) magnetPriceEl.textContent = boosts.magnet.price;
     
     buyButtons.forEach(btn => {
@@ -365,18 +370,7 @@ function updateUI() {
         if (boostType === 'power') price = boosts.power.price;
         if (boostType === 'luck') price = boosts.luck.price;
         if (boostType === 'superAfk') price = boosts.superAfk.price;
-        if (boostType === 'energy1') {
-            price = boosts.energy1.price;
-            canBuy = gameState.canBuyEnergyLevel(1);
-        }
-        if (boostType === 'energy2') {
-            price = boosts.energy2.price;
-            canBuy = gameState.canBuyEnergyLevel(2);
-        }
-        if (boostType === 'energy3') {
-            price = boosts.energy3.price;
-            canBuy = gameState.canBuyEnergyLevel(3);
-        }
+        if (boostType === 'energyUpgrade') price = boosts.energyUpgrade.price;
         if (boostType === 'magnet') {
             price = boosts.magnet.price;
             canBuy = !gameState.magnetActive;
@@ -432,6 +426,32 @@ buyButtons.forEach(btn => {
         }
     });
 });
+
+if (chargeHalfBtn) {
+    chargeHalfBtn.addEventListener('click', () => {
+        const cost = Math.floor(gameState.maxEnergy * 0.5 * 0.1);
+        if (gameState.chargeEnergy(0.5)) {
+            tg.HapticFeedback.notificationOccurred('success');
+            showNoEnergyMessage = null;
+            updateUI();
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+    });
+}
+
+if (chargeFullBtn) {
+    chargeFullBtn.addEventListener('click', () => {
+        const cost = Math.floor(gameState.maxEnergy * 0.1);
+        if (gameState.chargeEnergy(1)) {
+            tg.HapticFeedback.notificationOccurred('success');
+            showNoEnergyMessage = null;
+            updateUI();
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+    });
+}
 
 function spinRoulette(type) {
     let cost, wheel, resultEl;
