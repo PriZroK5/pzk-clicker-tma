@@ -15,7 +15,9 @@ class GameState {
         this.magnetActive = false;
         this.maxEnergy = 100;
         this.currentEnergy = 100;
-        this.energyBoost = 0;
+        this.energyLevel1 = false;
+        this.energyLevel2 = false;
+        this.energyLevel3 = false;
         this.load();
     }
 
@@ -33,16 +35,28 @@ class GameState {
                 this.luckBoost = data.luckBoost || 0;
                 this.superAfkActive = data.superAfkActive || false;
                 this.magnetActive = data.magnetActive || false;
-                this.maxEnergy = data.maxEnergy || 100;
+                this.energyLevel1 = data.energyLevel1 || false;
+                this.energyLevel2 = data.energyLevel2 || false;
+                this.energyLevel3 = data.energyLevel3 || false;
+                
+                this.updateMaxEnergy();
                 this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
-                this.energyBoost = data.energyBoost || 0;
+                if (this.currentEnergy > this.maxEnergy) this.currentEnergy = this.maxEnergy;
             } catch (e) {
                 console.error('Load error', e);
             }
         }
     }
 
+    updateMaxEnergy() {
+        this.maxEnergy = 100;
+        if (this.energyLevel1) this.maxEnergy += 50;
+        if (this.energyLevel2) this.maxEnergy += 100;
+        if (this.energyLevel3) this.maxEnergy += 200;
+    }
+
     save() {
+        this.updateMaxEnergy();
         const data = {
             coins: this.coins,
             multiplier: this.multiplier,
@@ -53,9 +67,11 @@ class GameState {
             luckBoost: this.luckBoost,
             superAfkActive: this.superAfkActive,
             magnetActive: this.magnetActive,
-            maxEnergy: this.maxEnergy,
+            energyLevel1: this.energyLevel1,
+            energyLevel2: this.energyLevel2,
+            energyLevel3: this.energyLevel3,
             currentEnergy: this.currentEnergy,
-            energyBoost: this.energyBoost
+            maxEnergy: this.maxEnergy
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -69,11 +85,24 @@ class GameState {
         return false;
     }
 
-    addMaxEnergy(amount) {
-        this.maxEnergy += amount;
+    addMaxEnergy(level) {
+        if (level === 1 && !this.energyLevel1) {
+            this.energyLevel1 = true;
+        } else if (level === 2 && !this.energyLevel2) {
+            this.energyLevel2 = true;
+        } else if (level === 3 && !this.energyLevel3) {
+            this.energyLevel3 = true;
+        }
+        this.updateMaxEnergy();
         this.currentEnergy = this.maxEnergy;
-        this.energyBoost += amount;
         this.save();
+    }
+
+    canBuyEnergyLevel(level) {
+        if (level === 1) return !this.energyLevel1;
+        if (level === 2) return !this.energyLevel2;
+        if (level === 3) return !this.energyLevel3;
+        return false;
     }
 }
 
@@ -109,15 +138,17 @@ class AfkBoost extends Boost {
     startAfkInterval() {
         if (!window.afkInterval) {
             window.afkInterval = setInterval(() => {
-                let gain = 1;
-                if (this.gameState.superAfkActive) gain += 3;
-                if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
-                if (this.gameState.useEnergy(1)) {
-                    this.gameState.coins += gain;
-                    createFloatingNumber(gain);
+                if (this.gameState.afkActive) {
+                    let gain = 1;
+                    if (this.gameState.superAfkActive) gain += 3;
+                    if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
+                    
+                    if (this.gameState.useEnergy(1)) {
+                        this.gameState.coins += gain;
+                        createFloatingNumber(gain);
+                    }
+                    updateUI();
                 }
-                this.gameState.save();
-                updateUI();
             }, 1000);
         }
     }
@@ -173,27 +204,36 @@ class SuperAfkBoost extends Boost {
     }
 }
 
-class EnergyBoost extends Boost {
+class EnergyLevel1Boost extends Boost {
     constructor(gameState) {
-        super(400, gameState);
+        super(200, gameState);
     }
     apply() {
-        this.gameState.addMaxEnergy(50);
+        this.gameState.addMaxEnergy(1);
     }
 }
 
-class SuperEnergyBoost extends Boost {
+class EnergyLevel2Boost extends Boost {
     constructor(gameState) {
-        super(800, gameState);
+        super(500, gameState);
     }
     apply() {
-        this.gameState.addMaxEnergy(100);
+        this.gameState.addMaxEnergy(2);
+    }
+}
+
+class EnergyLevel3Boost extends Boost {
+    constructor(gameState) {
+        super(1000, gameState);
+    }
+    apply() {
+        this.gameState.addMaxEnergy(3);
     }
 }
 
 class MagnetBoost extends Boost {
     constructor(gameState) {
-        super(1000, gameState);
+        super(1500, gameState);
     }
     apply() {
         this.gameState.magnetActive = true;
@@ -209,8 +249,9 @@ const boosts = {
     power: new PowerBoost(gameState),
     luck: new LuckBoost(gameState),
     superAfk: new SuperAfkBoost(gameState),
-    energy: new EnergyBoost(gameState),
-    superEnergy: new SuperEnergyBoost(gameState),
+    energy1: new EnergyLevel1Boost(gameState),
+    energy2: new EnergyLevel2Boost(gameState),
+    energy3: new EnergyLevel3Boost(gameState),
     magnet: new MagnetBoost(gameState)
 };
 
@@ -226,8 +267,9 @@ const randomPriceEl = document.getElementById('randomPrice');
 const powerPriceEl = document.getElementById('powerPrice');
 const luckPriceEl = document.getElementById('luckPrice');
 const superAfkPriceEl = document.getElementById('superAfkPrice');
-const energyPriceEl = document.getElementById('energyPrice');
-const superEnergyPriceEl = document.getElementById('superEnergyPrice');
+const energy1PriceEl = document.getElementById('energy1Price');
+const energy2PriceEl = document.getElementById('energy2Price');
+const energy3PriceEl = document.getElementById('energy3Price');
 const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -288,11 +330,12 @@ tabBtns.forEach(btn => {
 function updateUI() {
     coinBalanceEl.textContent = gameState.coins;
     
+    gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
     energyDisplay.textContent = `${gameState.currentEnergy}/${gameState.maxEnergy}`;
     energyFill.style.width = `${energyPercent}%`;
     
-    if (gameState.currentEnergy === 0) {
+    if (gameState.currentEnergy <= 0) {
         coinWrapper.classList.add('disabled');
     } else {
         coinWrapper.classList.remove('disabled');
@@ -304,25 +347,41 @@ function updateUI() {
     if (powerPriceEl) powerPriceEl.textContent = boosts.power.price;
     if (luckPriceEl) luckPriceEl.textContent = boosts.luck.price;
     if (superAfkPriceEl) superAfkPriceEl.textContent = boosts.superAfk.price;
-    if (energyPriceEl) energyPriceEl.textContent = boosts.energy.price;
-    if (superEnergyPriceEl) superEnergyPriceEl.textContent = boosts.superEnergy.price;
+    if (energy1PriceEl) energy1PriceEl.textContent = boosts.energy1.price;
+    if (energy2PriceEl) energy2PriceEl.textContent = boosts.energy2.price;
+    if (energy3PriceEl) energy3PriceEl.textContent = boosts.energy3.price;
     if (magnetPriceEl) magnetPriceEl.textContent = boosts.magnet.price;
     
     buyButtons.forEach(btn => {
         const boostType = btn.dataset.boost;
         if (!boostType) return;
         let price = 0;
+        let canBuy = true;
+        
         if (boostType === 'afk') price = boosts.afk.price;
         if (boostType === 'double') price = boosts.double.price;
         if (boostType === 'random') price = boosts.random.price;
         if (boostType === 'power') price = boosts.power.price;
         if (boostType === 'luck') price = boosts.luck.price;
         if (boostType === 'superAfk') price = boosts.superAfk.price;
-        if (boostType === 'energy') price = boosts.energy.price;
-        if (boostType === 'superEnergy') price = boosts.superEnergy.price;
-        if (boostType === 'magnet') price = boosts.magnet.price;
+        if (boostType === 'energy1') {
+            price = boosts.energy1.price;
+            canBuy = gameState.canBuyEnergyLevel(1);
+        }
+        if (boostType === 'energy2') {
+            price = boosts.energy2.price;
+            canBuy = gameState.canBuyEnergyLevel(2);
+        }
+        if (boostType === 'energy3') {
+            price = boosts.energy3.price;
+            canBuy = gameState.canBuyEnergyLevel(3);
+        }
+        if (boostType === 'magnet') {
+            price = boosts.magnet.price;
+            canBuy = !gameState.magnetActive;
+        }
         
-        btn.disabled = gameState.coins < price;
+        btn.disabled = gameState.coins < price || !canBuy;
     });
 }
 
@@ -448,3 +507,7 @@ updateUI();
 if (gameState.afkActive && !window.afkInterval) {
     new AfkBoost(gameState).startAfkInterval();
 }
+
+setInterval(() => {
+    updateUI();
+}, 100);
