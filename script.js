@@ -9,6 +9,10 @@ class GameState {
         this.afkActive = false;
         this.randomBoostActive = false;
         this.clickCount = 0;
+        this.powerBoost = 0;
+        this.luckBoost = 0;
+        this.superAfkActive = false;
+        this.magnetActive = false;
         this.load();
     }
 
@@ -22,6 +26,10 @@ class GameState {
                 this.afkActive = data.afkActive || false;
                 this.randomBoostActive = data.randomBoostActive || false;
                 this.clickCount = data.clickCount || 0;
+                this.powerBoost = data.powerBoost || 0;
+                this.luckBoost = data.luckBoost || 0;
+                this.superAfkActive = data.superAfkActive || false;
+                this.magnetActive = data.magnetActive || false;
             } catch (e) {
                 console.error('Load error', e);
             }
@@ -35,6 +43,10 @@ class GameState {
             afkActive: this.afkActive,
             randomBoostActive: this.randomBoostActive,
             clickCount: this.clickCount,
+            powerBoost: this.powerBoost,
+            luckBoost: this.luckBoost,
+            superAfkActive: this.superAfkActive,
+            magnetActive: this.magnetActive
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -66,15 +78,19 @@ class AfkBoost extends Boost {
     apply() {
         if (!this.gameState.afkActive) {
             this.gameState.afkActive = true;
-            if (!window.afkInterval) {
-                window.afkInterval = setInterval(() => {
-                    if (this.gameState.afkActive) {
-                        this.gameState.coins += 1;
-                        this.gameState.save();
-                        updateUI();
-                    }
-                }, 1000);
-            }
+            this.startAfkInterval();
+        }
+    }
+    startAfkInterval() {
+        if (!window.afkInterval) {
+            window.afkInterval = setInterval(() => {
+                let gain = 1;
+                if (this.gameState.superAfkActive) gain += 3;
+                if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
+                this.gameState.coins += gain;
+                this.gameState.save();
+                updateUI();
+            }, 1000);
         }
     }
 }
@@ -97,12 +113,57 @@ class RandomBoost extends Boost {
     }
 }
 
+class PowerBoost extends Boost {
+    constructor(gameState) {
+        super(200, gameState);
+    }
+    apply() {
+        this.gameState.powerBoost += 2;
+    }
+}
+
+class LuckBoost extends Boost {
+    constructor(gameState) {
+        super(300, gameState);
+    }
+    apply() {
+        this.gameState.luckBoost += 5;
+    }
+}
+
+class SuperAfkBoost extends Boost {
+    constructor(gameState) {
+        super(500, gameState);
+    }
+    apply() {
+        this.gameState.superAfkActive = true;
+        if (this.gameState.afkActive) {
+            clearInterval(window.afkInterval);
+            window.afkInterval = null;
+            new AfkBoost(this.gameState).startAfkInterval();
+        }
+    }
+}
+
+class MagnetBoost extends Boost {
+    constructor(gameState) {
+        super(1000, gameState);
+    }
+    apply() {
+        this.gameState.magnetActive = true;
+    }
+}
+
 const gameState = new GameState();
 
 const boosts = {
     afk: new AfkBoost(gameState),
     double: new DoubleBoost(gameState),
-    random: new RandomBoost(gameState)
+    random: new RandomBoost(gameState),
+    power: new PowerBoost(gameState),
+    luck: new LuckBoost(gameState),
+    superAfk: new SuperAfkBoost(gameState),
+    magnet: new MagnetBoost(gameState)
 };
 
 const coinBalanceEl = document.getElementById('coinBalance');
@@ -110,21 +171,50 @@ const clickableCoin = document.getElementById('clickableCoin');
 const afkPriceEl = document.getElementById('afkPrice');
 const doublePriceEl = document.getElementById('doublePrice');
 const randomPriceEl = document.getElementById('randomPrice');
+const powerPriceEl = document.getElementById('powerPrice');
+const luckPriceEl = document.getElementById('luckPrice');
+const superAfkPriceEl = document.getElementById('superAfkPrice');
+const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+const spinBasicBtn = document.getElementById('spinBasic');
+const spinVipBtn = document.getElementById('spinVip');
+const rouletteWheel = document.getElementById('rouletteWheel');
+const rouletteResult = document.getElementById('rouletteResult');
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`${tab}-tab`).classList.add('active');
+    });
+});
 
 function updateUI() {
     coinBalanceEl.textContent = gameState.coins;
     
-    afkPriceEl.textContent = boosts.afk.price;
-    doublePriceEl.textContent = boosts.double.price;
-    randomPriceEl.textContent = boosts.random.price;
+    if (afkPriceEl) afkPriceEl.textContent = boosts.afk.price;
+    if (doublePriceEl) doublePriceEl.textContent = boosts.double.price;
+    if (randomPriceEl) randomPriceEl.textContent = boosts.random.price;
+    if (powerPriceEl) powerPriceEl.textContent = boosts.power.price;
+    if (luckPriceEl) luckPriceEl.textContent = boosts.luck.price;
+    if (superAfkPriceEl) superAfkPriceEl.textContent = boosts.superAfk.price;
+    if (magnetPriceEl) magnetPriceEl.textContent = boosts.magnet.price;
     
     buyButtons.forEach(btn => {
         const boostType = btn.dataset.boost;
+        if (!boostType) return;
         let price = 0;
         if (boostType === 'afk') price = boosts.afk.price;
         if (boostType === 'double') price = boosts.double.price;
         if (boostType === 'random') price = boosts.random.price;
+        if (boostType === 'power') price = boosts.power.price;
+        if (boostType === 'luck') price = boosts.luck.price;
+        if (boostType === 'superAfk') price = boosts.superAfk.price;
+        if (boostType === 'magnet') price = boosts.magnet.price;
         
         btn.disabled = gameState.coins < price;
     });
@@ -134,7 +224,10 @@ clickableCoin.addEventListener('click', () => {
     clickableCoin.classList.add('coin-animate');
     setTimeout(() => clickableCoin.classList.remove('coin-animate'), 300);
 
-    gameState.coins += 1 * gameState.multiplier;
+    let gain = 1 * gameState.multiplier;
+    gain += gameState.powerBoost;
+    
+    gameState.coins += gain;
     
     if (gameState.randomBoostActive) {
         gameState.clickCount++;
@@ -153,6 +246,7 @@ clickableCoin.addEventListener('click', () => {
 buyButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
         const boostType = e.target.dataset.boost;
+        if (!boostType) return;
         const boost = boosts[boostType];
         if (boost && boost.buy()) {
             tg.HapticFeedback.notificationOccurred('success');
@@ -163,12 +257,73 @@ buyButtons.forEach(btn => {
     });
 });
 
+function spinRoulette(type) {
+    let cost, min, max;
+    if (type === 'basic') {
+        cost = 150;
+        min = 100;
+        max = 1000;
+    } else {
+        cost = 1000;
+        min = 2000;
+        max = 5000;
+    }
+
+    if (gameState.coins < cost) {
+        rouletteResult.textContent = '❌ НЕДОСТАТОЧНО МОНЕТ';
+        tg.HapticFeedback.notificationOccurred('error');
+        return;
+    }
+
+    gameState.coins -= cost;
+    
+    rouletteWheel.style.transform = 'rotate(0deg)';
+    setTimeout(() => {
+        const spins = Math.floor(Math.random() * 5) + 8;
+        const degrees = spins * 360 + Math.floor(Math.random() * 360);
+        rouletteWheel.style.transform = `rotate(${degrees}deg)`;
+    }, 10);
+
+    setTimeout(() => {
+        let winAmount;
+        const chance = Math.random() * 100;
+        const luckBonus = gameState.luckBoost;
+        
+        if (type === 'basic') {
+            if (chance < 5 + luckBonus) winAmount = 1000;
+            else if (chance < 15 + luckBonus) winAmount = 750;
+            else if (chance < 30 + luckBonus) winAmount = 500;
+            else if (chance < 50 + luckBonus) winAmount = 300;
+            else if (chance < 75 + luckBonus) winAmount = 200;
+            else winAmount = 100;
+        } else {
+            if (chance < 5 + luckBonus) winAmount = 5000;
+            else if (chance < 15 + luckBonus) winAmount = 4000;
+            else if (chance < 30 + luckBonus) winAmount = 3500;
+            else if (chance < 50 + luckBonus) winAmount = 3000;
+            else if (chance < 75 + luckBonus) winAmount = 2500;
+            else winAmount = 2000;
+        }
+
+        gameState.coins += winAmount;
+        gameState.save();
+        
+        rouletteResult.textContent = `🎉 ВЫ ВЫИГРАЛИ ${winAmount} PZK!`;
+        tg.HapticFeedback.notificationOccurred('success');
+        updateUI();
+    }, 3100);
+}
+
+if (spinBasicBtn) {
+    spinBasicBtn.addEventListener('click', () => spinRoulette('basic'));
+}
+
+if (spinVipBtn) {
+    spinVipBtn.addEventListener('click', () => spinRoulette('vip'));
+}
+
 updateUI();
 
 if (gameState.afkActive && !window.afkInterval) {
-    window.afkInterval = setInterval(() => {
-        gameState.coins += 1;
-        gameState.save();
-        updateUI();
-    }, 1000);
+    new AfkBoost(gameState).startAfkInterval();
 }
