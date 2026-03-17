@@ -575,3 +575,152 @@ body {
     font-size: 10px;
     padding: 8px 5px;
 }
+
+
+.minigame-preview {
+    background: rgba(0, 243, 255, 0.05);
+    border: 1px solid var(--neon-blue);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.minigame-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.minigame-title {
+    font-size: 24px;
+    color: var(--neon-blue);
+    text-shadow: var(--neon-glow);
+    margin-bottom: 15px;
+}
+
+.minigame-description {
+    color: #fff;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.minigame-status {
+    color: var(--neon-blue);
+    font-size: 16px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(0, 243, 255, 0.1);
+    border-radius: 10px;
+}
+
+.minigame-start-btn {
+    width: auto;
+    padding: 15px 40px;
+    font-size: 16px;
+}
+
+.minigame-board {
+    margin: 20px 0;
+}
+
+.minigame-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 10px;
+}
+
+.minigame-card {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px solid var(--neon-blue);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: var(--neon-box);
+}
+
+.minigame-card:hover {
+    transform: scale(1.05);
+    box-shadow: var(--neon-glow);
+}
+
+.minigame-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.minigame-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.minigame-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.minigame-popup {
+    background: linear-gradient(45deg, #001a33, #003366);
+    border: 3px solid var(--neon-blue);
+    border-radius: 30px;
+    padding: 40px;
+    box-shadow: var(--neon-glow);
+    animation: popupAppear 0.5s ease-out;
+}
+
+@keyframes popupAppear {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.popup-content {
+    text-align: center;
+}
+
+.win-amount {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--neon-blue);
+    text-shadow: var(--neon-glow);
+    display: block;
+    animation: winPulse 1s infinite;
+}
+
+@keyframes winPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.win-currency {
+    font-size: 36px;
+    color: #fff;
+    text-shadow: var(--neon-glow);
+    display: block;
+    margin-top: 10px;
+}
