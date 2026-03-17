@@ -4,7 +4,7 @@ tg.expand();
 
 class GameState {
     constructor() {
-        this.coins = 0;
+        this.coins = 1000;
         this.multiplier = 1;
         this.afkActive = false;
         this.afkLevel = 1;
@@ -19,6 +19,9 @@ class GameState {
         this.currentEnergy = 100;
         this.energyLevel = 1;
         this.energyMultiplier = 2;
+        this.minigameAvailable = true;
+        this.minigameAttempts = 1;
+        this.minigameLastPlayed = null;
         this.load();
     }
 
@@ -40,7 +43,10 @@ class GameState {
                 this.magnetActive = data.magnetActive || false;
                 this.energyLevel = data.energyLevel || 1;
                 this.energyMultiplier = data.energyMultiplier || 2;
+                this.minigameAttempts = data.minigameAttempts || 1;
+                this.minigameLastPlayed = data.minigameLastPlayed || null;
                 
+                this.checkDailyReset();
                 this.updateMaxEnergy();
                 this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
                 if (this.currentEnergy > this.maxEnergy) this.currentEnergy = this.maxEnergy;
@@ -50,8 +56,18 @@ class GameState {
         }
     }
 
-    updateMaxEnergy() {
-        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+    checkDailyReset() {
+        if (this.minigameLastPlayed) {
+            const lastPlayed = new Date(this.minigameLastPlayed);
+            const now = new Date();
+            
+            if (now.getDate() !== lastPlayed.getDate() || 
+                now.getMonth() !== lastPlayed.getMonth() || 
+                now.getFullYear() !== lastPlayed.getFullYear()) {
+                this.minigameAttempts = 1;
+                this.minigameLastPlayed = null;
+            }
+        }
     }
 
     save() {
@@ -71,7 +87,9 @@ class GameState {
             energyLevel: this.energyLevel,
             energyMultiplier: this.energyMultiplier,
             currentEnergy: this.currentEnergy,
-            maxEnergy: this.maxEnergy
+            maxEnergy: this.maxEnergy,
+            minigameAttempts: this.minigameAttempts,
+            minigameLastPlayed: this.minigameLastPlayed
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -113,6 +131,10 @@ class GameState {
         return 300 * Math.pow(2, this.energyLevel - 1);
     }
 
+    updateMaxEnergy() {
+        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+    }
+
     getAfkGain() {
         let gain = this.afkBaseGain;
         if (this.superAfkActive) gain += 3;
@@ -123,6 +145,27 @@ class GameState {
     upgradeAfk() {
         if (this.afkLevel < 10) {
             this.afkLevel++;
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    buyMinigameAttempt() {
+        const cost = 2000;
+        if (this.coins >= cost && this.minigameAttempts < 2) {
+            this.coins -= cost;
+            this.minigameAttempts = 2;
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    playMinigame() {
+        if (this.minigameAttempts > 0) {
+            this.minigameAttempts--;
+            this.minigameLastPlayed = new Date().toISOString();
             this.save();
             return true;
         }
@@ -235,6 +278,15 @@ class EnergyUpgradeBoost extends Boost {
     }
 }
 
+class MinigameAttemptBoost extends Boost {
+    constructor(gameState) {
+        super(2000, gameState);
+    }
+    apply() {
+        return this.gameState.buyMinigameAttempt();
+    }
+}
+
 class MagnetBoost extends Boost {
     constructor(gameState) {
         super(1500, gameState);
@@ -255,6 +307,7 @@ const boosts = {
     luck: new LuckBoost(gameState),
     superAfk: new SuperAfkBoost(gameState),
     energyUpgrade: new EnergyUpgradeBoost(gameState),
+    minigameAttempt: new MinigameAttemptBoost(gameState),
     magnet: new MagnetBoost(gameState)
 };
 
@@ -277,6 +330,8 @@ const superAfkPriceEl = document.getElementById('superAfkPrice');
 const energyLevelEl = document.getElementById('energyLevel');
 const energyMultEl = document.getElementById('energyMult');
 const energyUpgradePriceEl = document.getElementById('energyUpgradePrice');
+const minigameAttemptPriceEl = document.getElementById('minigameAttemptPrice');
+const minigameAttemptItem = document.getElementById('minigameAttemptItem');
 const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -289,6 +344,13 @@ const basicResult = document.getElementById('basicResult');
 const vipResult = document.getElementById('vipResult');
 const chargeHalfBtn = document.getElementById('chargeHalf');
 const chargeFullBtn = document.getElementById('chargeFull');
+const startMinigameBtn = document.getElementById('startMinigame');
+const minigamePreview = document.getElementById('minigamePreview');
+const minigameBoard = document.getElementById('minigameBoard');
+const minigameOverlay = document.getElementById('minigameOverlay');
+const winAmount = document.getElementById('winAmount');
+const minigameCards = document.querySelectorAll('.minigame-card');
+const minigameStatus = document.getElementById('minigameStatus');
 
 let noEnergyMessage = null;
 
@@ -333,6 +395,75 @@ tabBtns.forEach(btn => {
         tabContents.forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`${tab}-tab`).classList.add('active');
+        
+        if (tab === 'minigame') {
+            updateMinigameUI();
+        }
+    });
+});
+
+function updateMinigameUI() {
+    if (minigameStatus) {
+        if (gameState.minigameAttempts > 0) {
+            minigameStatus.innerHTML = `🎮 Доступно попыток: ${gameState.minigameAttempts}`;
+            startMinigameBtn.disabled = false;
+        } else {
+            minigameStatus.innerHTML = '❌ Сегодня уже играли. Купите попытку в магазине!';
+            startMinigameBtn.disabled = true;
+        }
+    }
+    
+    if (minigameAttemptItem && minigameAttemptPriceEl) {
+        minigameAttemptPriceEl.textContent = boosts.minigameAttempt.price;
+        const buyBtn = minigameAttemptItem.querySelector('.neon-btn');
+        if (buyBtn) {
+            buyBtn.disabled = gameState.coins < boosts.minigameAttempt.price || gameState.minigameAttempts >= 2;
+        }
+    }
+}
+
+function startMinigame() {
+    if (!gameState.playMinigame()) return;
+    
+    minigamePreview.style.display = 'none';
+    minigameBoard.style.display = 'block';
+    
+    const values = [];
+    for (let i = 0; i < 6; i++) {
+        values.push(Math.floor(Math.random() * 3701) + 300);
+    }
+    
+    minigameCards.forEach((card, index) => {
+        card.classList.remove('disabled');
+        card.dataset.value = values[index];
+    });
+}
+
+minigameCards.forEach(card => {
+    card.addEventListener('click', () => {
+        if (card.classList.contains('disabled')) return;
+        
+        const winValue = parseInt(card.dataset.value);
+        
+        minigameCards.forEach(c => c.classList.add('disabled'));
+        
+        winAmount.textContent = `+${winValue}`;
+        minigameOverlay.style.display = 'flex';
+        
+        gameState.coins += winValue;
+        gameState.save();
+        updateUI();
+        
+        setTimeout(() => {
+            minigameOverlay.style.display = 'none';
+            
+            document.querySelector('[data-tab="clicker"]').click();
+            
+            minigameBoard.style.display = 'none';
+            minigamePreview.style.display = 'block';
+            
+            updateMinigameUI();
+        }, 2000);
     });
 });
 
@@ -367,6 +498,7 @@ function updateUI() {
     if (energyLevelEl) energyLevelEl.textContent = gameState.energyLevel;
     if (energyMultEl) energyMultEl.textContent = gameState.energyMultiplier;
     if (energyUpgradePriceEl) energyUpgradePriceEl.textContent = boosts.energyUpgrade.price;
+    if (minigameAttemptPriceEl) minigameAttemptPriceEl.textContent = boosts.minigameAttempt.price;
     if (magnetPriceEl) magnetPriceEl.textContent = boosts.magnet.price;
     
     buyButtons.forEach(btn => {
@@ -390,6 +522,10 @@ function updateUI() {
         if (boostType === 'energyUpgrade') {
             price = boosts.energyUpgrade.price;
             canBuy = gameState.energyLevel < 10;
+        }
+        if (boostType === 'minigameAttempt') {
+            price = boosts.minigameAttempt.price;
+            canBuy = gameState.minigameAttempts < 2;
         }
         if (boostType === 'magnet') {
             price = boosts.magnet.price;
@@ -450,6 +586,9 @@ buyButtons.forEach(btn => {
         if (boost && boost.buy()) {
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
+            if (boostType === 'minigameAttempt') {
+                updateMinigameUI();
+            }
         } else {
             tg.HapticFeedback.notificationOccurred('error');
         }
@@ -476,6 +615,10 @@ if (chargeFullBtn) {
             tg.HapticFeedback.notificationOccurred('error');
         }
     });
+}
+
+if (startMinigameBtn) {
+    startMinigameBtn.addEventListener('click', startMinigame);
 }
 
 function spinRoulette(type) {
@@ -548,15 +691,13 @@ if (spinVipBtn) {
     spinVipBtn.addEventListener('click', () => spinRoulette('vip'));
 }
 
-// Инициализация
 updateUI();
+updateMinigameUI();
 
-// Запуск AFK интервала если активен
 if (gameState.afkActive && !window.afkInterval) {
     new AfkBoost(gameState).startAfkInterval();
 }
 
-// Обновление UI каждые 100мс
 setInterval(() => {
     updateUI();
 }, 100);
