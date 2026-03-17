@@ -168,6 +168,8 @@ const boosts = {
 
 const coinBalanceEl = document.getElementById('coinBalance');
 const clickableCoin = document.getElementById('clickableCoin');
+const coinWrapper = document.getElementById('coinWrapper');
+const floatingContainer = document.getElementById('floatingNumbers');
 const afkPriceEl = document.getElementById('afkPrice');
 const doublePriceEl = document.getElementById('doublePrice');
 const randomPriceEl = document.getElementById('randomPrice');
@@ -182,6 +184,24 @@ const spinBasicBtn = document.getElementById('spinBasic');
 const spinVipBtn = document.getElementById('spinVip');
 const rouletteWheel = document.getElementById('rouletteWheel');
 const rouletteResult = document.getElementById('rouletteResult');
+
+function createFloatingNumber(value) {
+    const num = document.createElement('div');
+    num.className = 'floating-number';
+    num.textContent = `+${value}`;
+    
+    const x = Math.random() * 100 + '%';
+    const y = Math.random() * 50 + 25 + '%';
+    
+    num.style.left = x;
+    num.style.top = y;
+    
+    floatingContainer.appendChild(num);
+    
+    setTimeout(() => {
+        num.remove();
+    }, 1000);
+}
 
 tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -228,12 +248,14 @@ clickableCoin.addEventListener('click', () => {
     gain += gameState.powerBoost;
     
     gameState.coins += gain;
+    createFloatingNumber(gain);
     
     if (gameState.randomBoostActive) {
         gameState.clickCount++;
         if (gameState.clickCount >= 50) {
             const bonus = Math.floor(Math.random() * 21) + 5;
             gameState.coins += bonus;
+            createFloatingNumber(bonus);
             gameState.clickCount = 0;
             tg.HapticFeedback.impactOccurred('medium');
         }
@@ -261,7 +283,7 @@ function spinRoulette(type) {
     let cost, min, max;
     if (type === 'basic') {
         cost = 150;
-        min = 100;
+        min = 50;
         max = 1000;
     } else {
         cost = 1000;
@@ -276,6 +298,7 @@ function spinRoulette(type) {
     }
 
     gameState.coins -= cost;
+    updateUI();
     
     rouletteWheel.style.transform = 'rotate(0deg)';
     setTimeout(() => {
@@ -309,6 +332,7 @@ function spinRoulette(type) {
         gameState.save();
         
         rouletteResult.textContent = `🎉 ВЫ ВЫИГРАЛИ ${winAmount} PZK!`;
+        createFloatingNumber(winAmount);
         tg.HapticFeedback.notificationOccurred('success');
         updateUI();
     }, 3100);
