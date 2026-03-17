@@ -767,7 +767,7 @@ body::after {
 .container
 {
     background-image: url('fon.jpeg');
-    background-size: cover;
+    background-size: 12 eg;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
