@@ -4,7 +4,7 @@ tg.expand();
 
 class GameState {
     constructor() {
-        this.coins = 0;
+        this.coins = 1000; // Для теста
         this.multiplier = 1;
         this.afkActive = false;
         this.afkLevel = 1;
@@ -98,7 +98,7 @@ class GameState {
 
     upgradeEnergy() {
         const cost = this.getEnergyUpgradeCost();
-        if (this.coins >= cost) {
+        if (this.coins >= cost && this.energyLevel < 10) {
             this.coins -= cost;
             this.energyLevel++;
             this.updateMaxEnergy();
@@ -121,8 +121,12 @@ class GameState {
     }
 
     upgradeAfk() {
-        this.afkLevel++;
-        this.save();
+        if (this.afkLevel < 10) {
+            this.afkLevel++;
+            this.save();
+            return true;
+        }
+        return false;
     }
 }
 
@@ -134,9 +138,9 @@ class Boost {
     buy() {
         if (this.gameState.coins >= this.price) {
             this.gameState.coins -= this.price;
-            this.apply();
+            const result = this.apply();
             this.gameState.save();
-            return true;
+            return result;
         }
         return false;
     }
@@ -153,8 +157,9 @@ class AfkBoost extends Boost {
         if (!this.gameState.afkActive) {
             this.gameState.afkActive = true;
         }
-        this.gameState.upgradeAfk();
+        const upgraded = this.gameState.upgradeAfk();
         this.startAfkInterval();
+        return upgraded;
     }
     startAfkInterval() {
         if (!window.afkInterval) {
@@ -177,6 +182,7 @@ class DoubleBoost extends Boost {
     }
     apply() {
         this.gameState.multiplier *= 2;
+        return true;
     }
 }
 
@@ -186,6 +192,7 @@ class RandomBoost extends Boost {
     }
     apply() {
         this.gameState.randomBoostActive = true;
+        return true;
     }
 }
 
@@ -195,6 +202,7 @@ class PowerBoost extends Boost {
     }
     apply() {
         this.gameState.powerBoost += 2;
+        return true;
     }
 }
 
@@ -204,6 +212,7 @@ class LuckBoost extends Boost {
     }
     apply() {
         this.gameState.luckBoost += 5;
+        return true;
     }
 }
 
@@ -213,6 +222,7 @@ class SuperAfkBoost extends Boost {
     }
     apply() {
         this.gameState.superAfkActive = true;
+        return true;
     }
 }
 
@@ -221,7 +231,7 @@ class EnergyUpgradeBoost extends Boost {
         super(gameState.getEnergyUpgradeCost(), gameState);
     }
     apply() {
-        this.gameState.upgradeEnergy();
+        return this.gameState.upgradeEnergy();
     }
 }
 
@@ -231,6 +241,7 @@ class MagnetBoost extends Boost {
     }
     apply() {
         this.gameState.magnetActive = true;
+        return true;
     }
 }
 
@@ -286,7 +297,7 @@ function createFloatingNumber(value) {
     num.className = 'floating-number';
     num.textContent = `+${value}`;
     
-    const x = Math.random() * 100 + '%';
+    const x = Math.random() * 80 + 10 + '%';
     const y = Math.random() * 50 + 25 + '%';
     
     num.style.left = x;
@@ -330,7 +341,7 @@ function updateUI() {
     
     gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
-    energyDisplay.textContent = `${gameState.currentEnergy}/${gameState.maxEnergy}`;
+    energyDisplay.textContent = `${gameState.currentEnergy}/${Math.floor(gameState.maxEnergy)}`;
     energyFill.style.width = `${energyPercent}%`;
     
     if (gameState.currentEnergy <= 0) {
@@ -364,13 +375,22 @@ function updateUI() {
         let price = 0;
         let canBuy = true;
         
-        if (boostType === 'afk') price = boosts.afk.price;
+        if (boostType === 'afk') {
+            price = boosts.afk.price;
+            canBuy = gameState.afkLevel < 10;
+        }
         if (boostType === 'double') price = boosts.double.price;
         if (boostType === 'random') price = boosts.random.price;
         if (boostType === 'power') price = boosts.power.price;
         if (boostType === 'luck') price = boosts.luck.price;
-        if (boostType === 'superAfk') price = boosts.superAfk.price;
-        if (boostType === 'energyUpgrade') price = boosts.energyUpgrade.price;
+        if (boostType === 'superAfk') {
+            price = boosts.superAfk.price;
+            canBuy = !gameState.superAfkActive;
+        }
+        if (boostType === 'energyUpgrade') {
+            price = boosts.energyUpgrade.price;
+            canBuy = gameState.energyLevel < 10;
+        }
         if (boostType === 'magnet') {
             price = boosts.magnet.price;
             canBuy = !gameState.magnetActive;
@@ -378,6 +398,15 @@ function updateUI() {
         
         btn.disabled = gameState.coins < price || !canBuy;
     });
+
+    if (chargeHalfBtn) {
+        const halfCost = Math.floor(gameState.maxEnergy * 0.5 * 0.1);
+        chargeHalfBtn.textContent = `🔋 ЗАРЯДИТЬ 50% (${halfCost} PZK)`;
+    }
+    if (chargeFullBtn) {
+        const fullCost = Math.floor(gameState.maxEnergy * 0.1);
+        chargeFullBtn.textContent = `⚡ ЗАРЯДИТЬ 100% (${fullCost} PZK)`;
+    }
 }
 
 clickableCoin.addEventListener('click', () => {
@@ -429,10 +458,8 @@ buyButtons.forEach(btn => {
 
 if (chargeHalfBtn) {
     chargeHalfBtn.addEventListener('click', () => {
-        const cost = Math.floor(gameState.maxEnergy * 0.5 * 0.1);
         if (gameState.chargeEnergy(0.5)) {
             tg.HapticFeedback.notificationOccurred('success');
-            showNoEnergyMessage = null;
             updateUI();
         } else {
             tg.HapticFeedback.notificationOccurred('error');
@@ -442,10 +469,8 @@ if (chargeHalfBtn) {
 
 if (chargeFullBtn) {
     chargeFullBtn.addEventListener('click', () => {
-        const cost = Math.floor(gameState.maxEnergy * 0.1);
         if (gameState.chargeEnergy(1)) {
             tg.HapticFeedback.notificationOccurred('success');
-            showNoEnergyMessage = null;
             updateUI();
         } else {
             tg.HapticFeedback.notificationOccurred('error');
@@ -523,12 +548,15 @@ if (spinVipBtn) {
     spinVipBtn.addEventListener('click', () => spinRoulette('vip'));
 }
 
+// Инициализация
 updateUI();
 
+// Запуск AFK интервала если активен
 if (gameState.afkActive && !window.afkInterval) {
     new AfkBoost(gameState).startAfkInterval();
 }
 
+// Обновление UI каждые 100мс
 setInterval(() => {
     updateUI();
 }, 100);
