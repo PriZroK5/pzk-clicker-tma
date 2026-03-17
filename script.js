@@ -4,7 +4,7 @@ tg.expand();
 
 class GameState {
     constructor() {
-        this.coins = 1000; // Для теста
+        this.coins = 0; // Для теста
         this.multiplier = 1;
         this.afkActive = false;
         this.afkLevel = 1;
