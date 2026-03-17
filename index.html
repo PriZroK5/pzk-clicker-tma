@@ -1,170 +1,55 @@
-:root {
-    --tg-theme-bg-color: #0a0f1e;
-    --tg-theme-text-color: #e0f2fe;
-    --tg-theme-button-color: #00a3ff;
-    --tg-theme-button-text-color: #0a0f1e;
-    --neon-glow: 0 0 10px #00a3ff, 0 0 20px #00a3ff, 0 0 30px #00a3ff;
-    --neon-box-shadow: 0 0 5px #00a3ff, inset 0 0 5px #00a3ff;
-}
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Pzk Clicker</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Подключаем скрипт Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">PzkClicker</h1>
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
+      <!-- Счётчик монет -->
+      <div class="balance"><span id="coinBalance">0</span> PzkCoins</div>
 
-body {
-    background-color: var(--tg-theme-bg-color);
-    color: var(--tg-theme-text-color);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 16px;
-    text-shadow: 0 0 5px #00a3ff;
-}
+      <!-- Кликабельная монета -->
+      <div class="coin-wrapper">
+        <div class="coin" id="clickableCoin">
+          <!-- Здесь будет фото из CSS -->
+        </div>
+      </div>
 
-.container {
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-}
-
-.title {
-    font-size: 28px;
-    margin-bottom: 10px;
-    color: #00a3ff;
-    text-shadow: 0 0 10px #00a3ff;
-    letter-spacing: 2px;
-}
-
-.balance {
-    font-size: 32px;
-    font-weight: bold;
-    margin: 20px 0;
-    padding: 15px;
-    background-color: rgba(0, 163, 255, 0.1);
-    border-radius: 20px;
-    border: 1px solid #00a3ff;
-    box-shadow: var(--neon-box-shadow);
-    color: #00a3ff;
-}
-
-.coin-wrapper {
-    margin: 20px 0 30px;
-    cursor: pointer;
-}
-
-.coin {
-    width: 200px;
-    height: 200px;
-    margin: 0 auto;
-    background-image: url('pzk.jpg');
-    background-size: cover;
-    background-position: center;
-    border-radius: 50%;
-    transition: transform 0.1s ease;
-    box-shadow: var(--neon-glow), 0 10px 20px rgba(0, 0, 0, 0.3);
-    border: 2px solid #00a3ff;
-}
-
-.coin:active {
-    transform: scale(0.9);
-}
-
-.coin-animate {
-    animation: bounce 0.3s ease, neonPulse 0.3s ease;
-}
-
-@keyframes bounce {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-@keyframes neonPulse {
-    0% { box-shadow: 0 0 5px #00a3ff, 0 0 10px #00a3ff; }
-    50% { box-shadow: 0 0 20px #00a3ff, 0 0 40px #00a3ff, 0 0 60px #00a3ff; }
-    100% { box-shadow: 0 0 5px #00a3ff, 0 0 10px #00a3ff; }
-}
-
-.boosts-panel {
-    margin-top: 30px;
-    text-align: left;
-    border-top: 1px solid #00a3ff;
-    padding-top: 20px;
-}
-
-.boosts-panel h2 {
-    margin-bottom: 15px;
-    font-size: 22px;
-    color: #00a3ff;
-    text-shadow: 0 0 10px #00a3ff;
-}
-
-.boosts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-}
-
-.boost-item {
-    background-color: rgba(0, 163, 255, 0.1);
-    color: #00a3ff;
-    border-radius: 15px;
-    padding: 15px 10px;
-    text-align: center;
-    box-shadow: var(--neon-box-shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border: 1px solid #00a3ff;
-    backdrop-filter: blur(5px);
-}
-
-.boost-item h3 {
-    font-size: 16px;
-    margin-bottom: 5px;
-    text-shadow: 0 0 5px #00a3ff;
-}
-
-.boost-item p {
-    font-size: 14px;
-    opacity: 0.9;
-    color: #e0f2fe;
-}
-
-.boost-price {
-    font-weight: bold;
-    font-size: 18px;
-    margin: 5px 0;
-    color: #00a3ff;
-    text-shadow: 0 0 10px #00a3ff;
-}
-
-.buy-btn {
-    background-color: #00a3ff;
-    color: #0a0f1e;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid #00a3ff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 0 10px #00a3ff;
-}
-
-.buy-btn:active {
-    opacity: 0.9;
-    transform: scale(0.95);
-    box-shadow: 0 0 20px #00a3ff;
-}
-
-.buy-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    box-shadow: none;
-}
+      <!-- Панель бустов -->
+      <div class="boosts-panel">
+        <h2>⚡️ Бусты</h2>
+        <div class="boosts-grid">
+          <div class="boost-item" id="boostAfk">
+            <h3>💤 AFK Кликер</h3>
+            <p>+1 монета/сек</p>
+            <p class="boost-price" id="afkPrice">10</p>
+            <button class="buy-btn" data-boost="afk">Купить</button>
+          </div>
+          <div class="boost-item" id="boostDouble">
+            <h3>2️⃣ Удвоение</h3>
+            <p>Клик ×2</p>
+            <p class="boost-price" id="doublePrice">50</p>
+            <button class="buy-btn" data-boost="double">Купить</button>
+          </div>
+          <div class="boost-item" id="boostRandom">
+            <h3>🎲 Рандом</h3>
+            <p>+бонус раз в 50 кликов</p>
+            <p class="boost-price" id="randomPrice">100</p>
+            <button class="buy-btn" data-boost="random">Купить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
