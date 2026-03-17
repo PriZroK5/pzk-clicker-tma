@@ -96,31 +96,43 @@
         <div id="roulette-tab" class="tab-content">
             <h2 class="neon-subtitle">🎲 НЕОН РУЛЕТКА</h2>
             
-            <div class="roulette-container">
-                <div class="roulette-wheel" id="rouletteWheel">
-                    <div class="wheel-segment" style="--i:0">100</div>
-                    <div class="wheel-segment" style="--i:1">200</div>
-                    <div class="wheel-segment" style="--i:2">300</div>
-                    <div class="wheel-segment" style="--i:3">500</div>
-                    <div class="wheel-segment" style="--i:4">750</div>
-                    <div class="wheel-segment" style="--i:5">1000</div>
-                    <div class="wheel-segment" style="--i:6">50</div>
+            <div class="roulette-selector">
+                <button class="roulette-selector-btn active" id="selectBasic">СТАРТОВАЯ</button>
+                <button class="roulette-selector-btn" id="selectVip">VIP</button>
+            </div>
+
+            <div id="basicRoulette" class="roulette-container active">
+                <div class="roulette-wheel" id="basicWheel">
+                    <div class="wheel-segment" style="--i:0">50</div>
+                    <div class="wheel-segment" style="--i:1">100</div>
+                    <div class="wheel-segment" style="--i:2">200</div>
+                    <div class="wheel-segment" style="--i:3">300</div>
+                    <div class="wheel-segment" style="--i:4">500</div>
+                    <div class="wheel-segment" style="--i:5">750</div>
+                    <div class="wheel-segment" style="--i:6">1000</div>
                     <div class="wheel-segment" style="--i:7">0</div>
                 </div>
                 <div class="wheel-pointer"></div>
-            </div>
-
-            <div class="roulette-controls">
-                <div class="roulette-card">
-                    <h3>🟢 СТАРТОВАЯ</h3>
+                <div class="roulette-info">
                     <p>Ставка: 150 PZK</p>
-                    <p>Выигрыш: 50-1000 PZK</p>
                     <button class="neon-btn roulette-btn" id="spinBasic">КРУТИТЬ</button>
                 </div>
-                <div class="roulette-card">
-                    <h3>🔵 VIP РУЛЕТКА</h3>
+            </div>
+
+            <div id="vipRoulette" class="roulette-container">
+                <div class="roulette-wheel" id="vipWheel">
+                    <div class="wheel-segment" style="--i:0">2000</div>
+                    <div class="wheel-segment" style="--i:1">2500</div>
+                    <div class="wheel-segment" style="--i:2">3000</div>
+                    <div class="wheel-segment" style="--i:3">3500</div>
+                    <div class="wheel-segment" style="--i:4">4000</div>
+                    <div class="wheel-segment" style="--i:5">4500</div>
+                    <div class="wheel-segment" style="--i:6">5000</div>
+                    <div class="wheel-segment" style="--i:7">1000</div>
+                </div>
+                <div class="wheel-pointer"></div>
+                <div class="roulette-info">
                     <p>Ставка: 1000 PZK</p>
-                    <p>Выигрыш: 2000-5000 PZK</p>
                     <button class="neon-btn roulette-btn" id="spinVip">КРУТИТЬ VIP</button>
                 </div>
             </div>
