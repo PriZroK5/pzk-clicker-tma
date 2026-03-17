@@ -1,9 +1,10 @@
-/* Стили под Telegram-тему */
 :root {
-    --tg-theme-bg-color: var(--tg-theme-bg-color, #f0f0f0);
-    --tg-theme-text-color: var(--tg-theme-text-color, #222222);
-    --tg-theme-button-color: var(--tg-theme-button-color, #40a7e3);
-    --tg-theme-button-text-color: var(--tg-theme-button-text-color, #ffffff);
+    --tg-theme-bg-color: #0a0f1e;
+    --tg-theme-text-color: #e0f2fe;
+    --tg-theme-button-color: #00a3ff;
+    --tg-theme-button-text-color: #0a0f1e;
+    --neon-glow: 0 0 10px #00a3ff, 0 0 20px #00a3ff, 0 0 30px #00a3ff;
+    --neon-box-shadow: 0 0 5px #00a3ff, inset 0 0 5px #00a3ff;
 }
 
 * {
@@ -20,6 +21,7 @@ body {
     display: flex;
     justify-content: center;
     padding: 16px;
+    text-shadow: 0 0 5px #00a3ff;
 }
 
 .container {
@@ -31,6 +33,9 @@ body {
 .title {
     font-size: 28px;
     margin-bottom: 10px;
+    color: #00a3ff;
+    text-shadow: 0 0 10px #00a3ff;
+    letter-spacing: 2px;
 }
 
 .balance {
@@ -38,11 +43,13 @@ body {
     font-weight: bold;
     margin: 20px 0;
     padding: 15px;
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0, 163, 255, 0.1);
     border-radius: 20px;
+    border: 1px solid #00a3ff;
+    box-shadow: var(--neon-box-shadow);
+    color: #00a3ff;
 }
 
-/* Монета */
 .coin-wrapper {
     margin: 20px 0 30px;
     cursor: pointer;
@@ -52,22 +59,21 @@ body {
     width: 200px;
     height: 200px;
     margin: 0 auto;
-    background-image: url('pzk.jpg'); /* Твоё фото */
+    background-image: url('pzk.jpg');
     background-size: cover;
     background-position: center;
     border-radius: 50%;
     transition: transform 0.1s ease;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    box-shadow: var(--neon-glow), 0 10px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid #00a3ff;
 }
 
-/* Анимация нажатия */
 .coin:active {
     transform: scale(0.9);
 }
 
-/* Класс для анимации от SERVER (добавляется через JS) */
 .coin-animate {
-    animation: bounce 0.3s ease;
+    animation: bounce 0.3s ease, neonPulse 0.3s ease;
 }
 
 @keyframes bounce {
@@ -76,17 +82,24 @@ body {
     100% { transform: scale(1); }
 }
 
-/* Бусты */
+@keyframes neonPulse {
+    0% { box-shadow: 0 0 5px #00a3ff, 0 0 10px #00a3ff; }
+    50% { box-shadow: 0 0 20px #00a3ff, 0 0 40px #00a3ff, 0 0 60px #00a3ff; }
+    100% { box-shadow: 0 0 5px #00a3ff, 0 0 10px #00a3ff; }
+}
+
 .boosts-panel {
     margin-top: 30px;
     text-align: left;
-    border-top: 1px solid rgba(0,0,0,0.1);
+    border-top: 1px solid #00a3ff;
     padding-top: 20px;
 }
 
 .boosts-panel h2 {
     margin-bottom: 15px;
     font-size: 22px;
+    color: #00a3ff;
+    text-shadow: 0 0 10px #00a3ff;
 }
 
 .boosts-grid {
@@ -96,50 +109,62 @@ body {
 }
 
 .boost-item {
-    background-color: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+    background-color: rgba(0, 163, 255, 0.1);
+    color: #00a3ff;
     border-radius: 15px;
     padding: 15px 10px;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: var(--neon-box-shadow);
     display: flex;
     flex-direction: column;
     gap: 8px;
+    border: 1px solid #00a3ff;
+    backdrop-filter: blur(5px);
 }
 
 .boost-item h3 {
     font-size: 16px;
     margin-bottom: 5px;
+    text-shadow: 0 0 5px #00a3ff;
 }
 
 .boost-item p {
     font-size: 14px;
     opacity: 0.9;
+    color: #e0f2fe;
 }
 
 .boost-price {
     font-weight: bold;
     font-size: 18px;
     margin: 5px 0;
+    color: #00a3ff;
+    text-shadow: 0 0 10px #00a3ff;
 }
 
 .buy-btn {
-    background-color: var(--tg-theme-button-text-color);
-    color: var(--tg-theme-button-color);
+    background-color: #00a3ff;
+    color: #0a0f1e;
     border: none;
     border-radius: 20px;
     padding: 10px 5px;
     font-weight: bold;
     cursor: pointer;
-    transition: opacity 0.2s;
-    border: 2px solid transparent;
+    transition: all 0.2s;
+    border: 1px solid #00a3ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px #00a3ff;
 }
 
 .buy-btn:active {
-    opacity: 0.7;
+    opacity: 0.9;
+    transform: scale(0.95);
+    box-shadow: 0 0 20px #00a3ff;
 }
 
 .buy-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
+    box-shadow: none;
 }
