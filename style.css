@@ -27,11 +27,7 @@ body {
 
 /* Основной фон для всех страниц */
 body {
-    background-image: url('fon.jpeg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+
 }
 
 /* Неоновое затемнение поверх фона */
@@ -766,6 +762,15 @@ body::after {
     50% {
         transform: scale(1.1);
     }
+}
+
+.container
+{
+    background-image: url('fon.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .win-currency {
