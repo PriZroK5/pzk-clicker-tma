@@ -1,296 +1,163 @@
 :root {
-    --neon-blue: #00f3ff;
-    --neon-dark: #0a0f1e;
-    --neon-glow: 0 0 10px #00f3ff, 0 0 20px #00f3ff, 0 0 40px #00f3ff;
-    --neon-box: 0 0 5px #00f3ff, inset 0 0 5px #00f3ff;
+    --neon-blue: #3b82f6;
+    --neon-glow: 0 0 8px #3b82f6;
+    --bg-dark: #0f172a;
+    --text-light: #f1f5f9;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
-    background: var(--neon-dark);
-    color: #fff;
+    background: var(--bg-dark);
+    color: var(--text-light);
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    font-family: 'Orbitron', sans-serif;
-    position: relative;
-    overflow-x: hidden;
-}
-
-.neon-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 50% 50%, #001a33 0%, #0a0f1e 100%);
-    z-index: -1;
-}
-
-.neon-background::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 243, 255, 0.03) 2px, rgba(0, 243, 255, 0.03) 4px);
-    pointer-events: none;
+    padding: 16px;
 }
 
 .container {
     max-width: 400px;
     width: 100%;
-    padding: 20px;
     text-align: center;
-    position: relative;
-    z-index: 1;
 }
 
-.neon-title {
-    font-size: 36px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    margin-bottom: 20px;
-    animation: flicker 3s infinite;
+.title {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
 }
 
-.neon-title span {
+.title span {
     color: var(--neon-blue);
     text-shadow: var(--neon-glow);
+    margin-left: 8px;
 }
 
-@keyframes flicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-        opacity: 1;
-        text-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff, 0 0 40px #00f3ff;
-    }
-    20%, 24%, 55% {
-        opacity: 0.5;
-        text-shadow: none;
-    }
-}
-
-.neon-balance {
-    font-size: 48px;
-    font-weight: 700;
-    margin: 20px 0 30px;
-    padding: 20px;
-    background: rgba(0, 243, 255, 0.05);
-    border: 2px solid var(--neon-blue);
-    border-radius: 20px;
-    box-shadow: var(--neon-box);
-    position: relative;
-    overflow: hidden;
-}
-
-.neon-balance::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(0, 243, 255, 0.1), transparent);
-    transform: rotate(45deg);
-    animation: shine 3s infinite;
-}
-
-@keyframes shine {
-    0% { transform: translateX(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) rotate(45deg); }
+.balance {
+    font-size: 36px;
+    font-weight: 600;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 16px;
+    border: 1px solid var(--neon-blue);
 }
 
 .currency {
-    font-size: 24px;
+    font-size: 20px;
     color: var(--neon-blue);
-    text-shadow: var(--neon-glow);
-    margin-left: 10px;
+    margin-left: 8px;
 }
 
 .coin-wrapper {
-    margin: 30px 0 40px;
+    margin: 20px 0 30px;
     cursor: pointer;
 }
 
-.neon-coin {
-    width: 220px;
-    height: 220px;
+.coin {
+    width: 200px;
+    height: 200px;
     margin: 0 auto;
-    position: relative;
-    border-radius: 50%;
-    animation: float 3s ease-in-out infinite;
-}
-
-.neon-coin::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #00f3ff, #0066ff, #00f3ff);
-    filter: blur(10px);
-    opacity: 0.7;
-    z-index: -1;
-    animation: rotate 4s linear infinite;
-}
-
-@keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.coin-inner {
-    width: 100%;
-    height: 100%;
     background-image: url('pzk.jpg');
     background-size: cover;
     background-position: center;
     border-radius: 50%;
-    border: 3px solid var(--neon-blue);
-    box-shadow: 0 0 30px var(--neon-blue);
+    border: 2px solid var(--neon-blue);
+    box-shadow: 0 0 15px var(--neon-blue);
+    transition: all 0.2s;
+}
+
+.coin:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 25px var(--neon-blue);
 }
 
 .coin-animate {
-    animation: clickPulse 0.3s ease-out;
+    animation: pulse 0.3s ease;
 }
 
-@keyframes clickPulse {
+@keyframes pulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.3); filter: brightness(1.5); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px var(--neon-blue); }
     100% { transform: scale(1); }
 }
 
 .boosts-panel {
-    margin-top: 40px;
-    padding-top: 30px;
-    border-top: 2px solid var(--neon-blue);
-    position: relative;
+    margin-top: 30px;
+    border-top: 1px solid rgba(59, 130, 246, 0.3);
+    padding-top: 20px;
 }
 
-.neon-subtitle {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 25px;
+.subtitle {
+    font-size: 22px;
+    margin-bottom: 20px;
     color: var(--neon-blue);
-    text-shadow: var(--neon-glow);
-    letter-spacing: 2px;
 }
 
 .boosts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    padding: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
 }
 
-.neon-boost-item {
-    background: rgba(0, 243, 255, 0.05);
+.boost-item {
+    background: rgba(59, 130, 246, 0.1);
     border: 1px solid var(--neon-blue);
-    border-radius: 15px;
-    padding: 20px 10px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s;
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
 }
 
-.neon-boost-item:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--neon-glow);
-}
-
-.boost-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.neon-boost-item:hover .boost-glow {
-    opacity: 1;
-}
-
-.neon-boost-item h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #fff;
-    position: relative;
-    z-index: 1;
-}
-
-.neon-boost-item p {
+.boost-item h3 {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 10px;
-    position: relative;
-    z-index: 1;
+    margin-bottom: 5px;
+}
+
+.boost-item p {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-bottom: 5px;
 }
 
 .boost-price {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--neon-blue);
-    text-shadow: var(--neon-glow);
-    margin: 10px 0;
-    position: relative;
-    z-index: 1;
+    margin: 8px 0;
 }
 
 .boost-price::after {
     content: ' PZK';
-    font-size: 14px;
-    color: #fff;
-    text-shadow: none;
+    font-size: 10px;
+    opacity: 0.8;
 }
 
-.neon-btn {
+.buy-btn {
     background: transparent;
     color: var(--neon-blue);
     border: 1px solid var(--neon-blue);
-    border-radius: 25px;
-    padding: 10px 15px;
-    font-family: 'Orbitron', sans-serif;
+    border-radius: 20px;
+    padding: 6px 12px;
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    z-index: 1;
+    transition: all 0.2s;
     width: 100%;
-    text-transform: uppercase;
 }
 
-.neon-btn:hover:not(:disabled) {
+.buy-btn:active:not(:disabled) {
     background: var(--neon-blue);
-    color: var(--neon-dark);
-    box-shadow: var(--neon-glow);
+    color: var(--bg-dark);
 }
 
-.neon-btn:active:not(:disabled) {
-    transform: scale(0.95);
-}
-
-.neon-btn:disabled {
+.buy-btn:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-    border-color: rgba(0, 243, 255, 0.3);
 }
