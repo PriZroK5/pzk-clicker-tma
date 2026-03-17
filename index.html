@@ -40,6 +40,7 @@
             <button class="tab-btn" data-tab="shop">🏪 МАГАЗИН</button>
             <button class="tab-btn" data-tab="roulette-basic">🎲 PZK РУЛЕТКА</button>
             <button class="tab-btn" data-tab="roulette-vip">👑 VIP РУЛЕТКА</button>
+            <button class="tab-btn" data-tab="quests">📋 ЗАДАНИЯ</button>
         </div>
 
         <div id="clicker-tab" class="tab-content active">
@@ -179,6 +180,35 @@
             </div>
 
             <div id="vipResult" class="roulette-result"></div>
+        </div>
+
+        <div id="quests-tab" class="tab-content">
+            <div style="text-align: center; padding: 20px;">
+                <h2 class="neon-subtitle" style="margin-bottom: 20px;">📋 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
+                
+                <div style="background: rgba(0, 243, 255, 0.05); border: 1px solid var(--neon-blue); border-radius: 20px; padding: 30px; margin-bottom: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                    <p style="color: #fff; margin-bottom: 15px; font-size: 16px;">
+                        Выполняй задания каждый день и получай награды!
+                    </p>
+                    <p style="color: var(--neon-blue); margin-bottom: 25px; font-size: 14px;">
+                        • Кликай по монете<br>
+                        • Трать энергию<br>
+                        • Копи монеты<br>
+                        • Играй в рулетку<br>
+                        • Покупай бусты
+                    </p>
+                    <button class="neon-btn" onclick="window.location.href='ev.html'" 
+                            style="padding: 15px 30px; font-size: 16px; width: auto; display: inline-block;">
+                        📋 ОТКРЫТЬ ЗАДАНИЯ
+                    </button>
+                </div>
+
+                <div class="reset-timer" style="margin-top: 20px;">
+                    <div class="timer-label">ЗАДАНИЯ ОБНОВЛЯЮТСЯ</div>
+                    <div class="timer-value">КАЖДЫЙ ДЕНЬ В 00:00</div>
+                </div>
+            </div>
         </div>
     </div>
     
