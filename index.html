@@ -40,6 +40,7 @@
             <button class="tab-btn" data-tab="shop">🏪 МАГАЗИН</button>
             <button class="tab-btn" data-tab="roulette-basic">🎲 PZK РУЛЕТКА</button>
             <button class="tab-btn" data-tab="roulette-vip">👑 VIP РУЛЕТКА</button>
+            <button class="tab-btn" data-tab="minigame">🎮 МИНИ-ИГРА</button>
             <button class="tab-btn" data-tab="quests">📋 ЗАДАНИЯ</button>
         </div>
 
@@ -121,6 +122,12 @@
                     <div class="shop-price" id="energyUpgradePrice">300</div>
                     <button class="neon-btn" data-boost="energyUpgrade">УЛУЧШИТЬ</button>
                 </div>
+                <div class="neon-shop-item" id="minigameAttemptItem">
+                    <h3>🎮 ДОП. ПОПЫТКА</h3>
+                    <p>+1 попытка в мини-игре</p>
+                    <div class="shop-price" id="minigameAttemptPrice">2000</div>
+                    <button class="neon-btn" data-boost="minigameAttempt">КУПИТЬ</button>
+                </div>
                 <div class="neon-shop-item">
                     <h3>🎰 МАГНИТ</h3>
                     <p>+10% к монетам</p>
@@ -180,6 +187,53 @@
             </div>
 
             <div id="vipResult" class="roulette-result"></div>
+        </div>
+
+        <div id="minigame-tab" class="tab-content">
+            <h2 class="neon-subtitle">🎮 ЕЖЕДНЕВНАЯ МИНИ-ИГРА</h2>
+            
+            <div id="minigamePreview" class="minigame-preview">
+                <div class="minigame-icon">🎮</div>
+                <h3 class="minigame-title">НАЙДИ СВОЙ ПРИЗ!</h3>
+                <p class="minigame-description">
+                    Выбери один из 6 макетов.<br>
+                    Каждый скрывает случайный выигрыш от 300 до 4000 PZK!
+                </p>
+                <div class="minigame-status" id="minigameStatus"></div>
+                <button class="neon-btn minigame-start-btn" id="startMinigame">🎮 НАЧАТЬ ИГРУ</button>
+            </div>
+
+            <div id="minigameBoard" class="minigame-board" style="display: none;">
+                <div class="minigame-grid">
+                    <div class="minigame-card" data-id="1">
+                        <img src="1.jpg" alt="1" class="minigame-image">
+                    </div>
+                    <div class="minigame-card" data-id="2">
+                        <img src="2.jpg" alt="2" class="minigame-image">
+                    </div>
+                    <div class="minigame-card" data-id="3">
+                        <img src="3.jpg" alt="3" class="minigame-image">
+                    </div>
+                    <div class="minigame-card" data-id="4">
+                        <img src="4.jpg" alt="4" class="minigame-image">
+                    </div>
+                    <div class="minigame-card" data-id="5">
+                        <img src="5.jpg" alt="5" class="minigame-image">
+                    </div>
+                    <div class="minigame-card" data-id="6">
+                        <img src="6.jpg" alt="6" class="minigame-image">
+                    </div>
+                </div>
+            </div>
+
+            <div id="minigameOverlay" class="minigame-overlay" style="display: none;">
+                <div class="minigame-popup">
+                    <div class="popup-content">
+                        <span id="winAmount" class="win-amount">+0</span>
+                        <span class="win-currency">PZK</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="quests-tab" class="tab-content">
