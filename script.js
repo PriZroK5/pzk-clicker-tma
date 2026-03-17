@@ -143,10 +143,11 @@ class AfkBoost extends Boost {
                     if (this.gameState.superAfkActive) gain += 3;
                     if (this.gameState.magnetActive) gain = Math.floor(gain * 1.1);
                     
-                    if (this.gameState.useEnergy(1)) {
-                        this.gameState.coins += gain;
-                        createFloatingNumber(gain);
-                    }
+                    // AFK кликер НЕ тратит энергию!
+                    this.gameState.coins += gain;
+                    createFloatingNumber(gain);
+                    
+                    this.gameState.save();
                     updateUI();
                 }
             }, 1000);
