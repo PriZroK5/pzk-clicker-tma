@@ -45,7 +45,7 @@ body {
 }
 
 .container {
-    max-width: 400px;
+    max-width: 450px;
     width: 100%;
     padding: 20px;
     text-align: center;
@@ -57,7 +57,7 @@ body {
     font-size: 36px;
     font-weight: 900;
     letter-spacing: 4px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     animation: flicker 3s infinite;
 }
 
@@ -80,7 +80,7 @@ body {
 .neon-balance {
     font-size: 48px;
     font-weight: 700;
-    margin: 20px 0 30px;
+    margin: 15px 0 20px;
     padding: 20px;
     background: rgba(0, 243, 255, 0.05);
     border: 2px solid var(--neon-blue);
@@ -114,14 +114,53 @@ body {
     margin-left: 10px;
 }
 
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    background: rgba(0, 243, 255, 0.1);
+    padding: 5px;
+    border-radius: 30px;
+    border: 1px solid var(--neon-blue);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+}
+
+.tab-btn.active {
+    background: var(--neon-blue);
+    color: var(--neon-dark);
+    box-shadow: var(--neon-glow);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
 .coin-wrapper {
-    margin: 30px 0 40px;
+    margin: 20px 0 30px;
     cursor: pointer;
 }
 
 .neon-coin {
-    width: 220px;
-    height: 220px;
+    width: 200px;
+    height: 200px;
     margin: 0 auto;
     position: relative;
     border-radius: 50%;
@@ -175,39 +214,39 @@ body {
 }
 
 .boosts-panel {
-    margin-top: 40px;
-    padding-top: 30px;
+    margin-top: 30px;
+    padding-top: 20px;
     border-top: 2px solid var(--neon-blue);
     position: relative;
 }
 
 .neon-subtitle {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     color: var(--neon-blue);
     text-shadow: var(--neon-glow);
     letter-spacing: 2px;
 }
 
-.boosts-grid {
+.boosts-grid, .shop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    padding: 5px;
 }
 
-.neon-boost-item {
+.neon-boost-item, .neon-shop-item {
     background: rgba(0, 243, 255, 0.05);
     border: 1px solid var(--neon-blue);
     border-radius: 15px;
-    padding: 20px 10px;
+    padding: 15px 8px;
     position: relative;
     overflow: hidden;
     transition: all 0.3s;
 }
 
-.neon-boost-item:hover {
+.neon-boost-item:hover, .neon-shop-item:hover {
     transform: translateY(-5px);
     box-shadow: var(--neon-glow);
 }
@@ -227,36 +266,36 @@ body {
     opacity: 1;
 }
 
-.neon-boost-item h3 {
-    font-size: 18px;
+.neon-boost-item h3, .neon-shop-item h3 {
+    font-size: 14px;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: #fff;
     position: relative;
     z-index: 1;
 }
 
-.neon-boost-item p {
-    font-size: 14px;
+.neon-boost-item p, .neon-shop-item p {
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     position: relative;
     z-index: 1;
 }
 
-.boost-price {
-    font-size: 24px;
+.boost-price, .shop-price {
+    font-size: 18px;
     font-weight: 700;
     color: var(--neon-blue);
     text-shadow: var(--neon-glow);
-    margin: 10px 0;
+    margin: 8px 0;
     position: relative;
     z-index: 1;
 }
 
-.boost-price::after {
+.boost-price::after, .shop-price::after {
     content: ' PZK';
-    font-size: 14px;
+    font-size: 10px;
     color: #fff;
     text-shadow: none;
 }
@@ -265,10 +304,10 @@ body {
     background: transparent;
     color: var(--neon-blue);
     border: 1px solid var(--neon-blue);
-    border-radius: 25px;
-    padding: 10px 15px;
+    border-radius: 20px;
+    padding: 8px 12px;
     font-family: 'Orbitron', sans-serif;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -293,4 +332,117 @@ body {
     opacity: 0.3;
     cursor: not-allowed;
     border-color: rgba(0, 243, 255, 0.3);
+}
+
+.roulette-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 20px auto;
+}
+
+.roulette-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid var(--neon-blue);
+    box-shadow: var(--neon-glow);
+    transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
+}
+
+.wheel-segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(45deg, #001a33, #003366);
+    border: 1px solid var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: var(--neon-glow);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%);
+}
+
+.wheel-segment:nth-child(odd) {
+    background: linear-gradient(45deg, #003366, #001a33);
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid var(--neon-blue);
+    filter: drop-shadow(0 0 10px var(--neon-blue));
+    z-index: 10;
+}
+
+.roulette-controls {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.roulette-card {
+    flex: 1;
+    background: rgba(0, 243, 255, 0.05);
+    border: 1px solid var(--neon-blue);
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+}
+
+.roulette-card h3 {
+    font-size: 16px;
+    color: var(--neon-blue);
+    margin-bottom: 10px;
+    text-shadow: var(--neon-glow);
+}
+
+.roulette-card p {
+    font-size: 12px;
+    margin: 5px 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.roulette-btn {
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.roulette-result {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 243, 255, 0.1);
+    border: 1px solid var(--neon-blue);
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--neon-blue);
+    text-shadow: var(--neon-glow);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel-spinning {
+    animation: spinWheel 3s cubic-bezier(0.25, 0.1, 0.15, 1);
+}
+
+@keyframes spinWheel {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(1440deg); }
 }
