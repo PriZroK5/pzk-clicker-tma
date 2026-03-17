@@ -28,10 +28,11 @@
         </div>
 
         <div id="clicker-tab" class="tab-content active">
-            <div class="coin-wrapper">
+            <div class="coin-wrapper" id="coinWrapper">
                 <div class="neon-coin" id="clickableCoin">
                     <div class="coin-inner"></div>
                 </div>
+                <div id="floatingNumbers" class="floating-numbers-container"></div>
             </div>
 
             <div class="boosts-panel">
@@ -69,25 +70,25 @@
                     <h3>⚡ МОЩНЫЙ КЛИК</h3>
                     <p>+2 монеты за клик</p>
                     <div class="shop-price" id="powerPrice">200</div>
-                    <button class="neon-btn" id="buyPower">КУПИТЬ</button>
+                    <button class="neon-btn" data-boost="power">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>💎 УДАЧА</h3>
                     <p>+5% к рулетке</p>
                     <div class="shop-price" id="luckPrice">300</div>
-                    <button class="neon-btn" id="buyLuck">КУПИТЬ</button>
+                    <button class="neon-btn" data-boost="luck">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>🚀 СУПЕР AFK</h3>
                     <p>+3 монеты/сек</p>
                     <div class="shop-price" id="superAfkPrice">500</div>
-                    <button class="neon-btn" id="buySuperAfk">КУПИТЬ</button>
+                    <button class="neon-btn" data-boost="superAfk">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>🎰 МАГНИТ</h3>
                     <p>+10% к монетам</p>
                     <div class="shop-price" id="magnetPrice">1000</div>
-                    <button class="neon-btn" id="buyMagnet">КУПИТЬ</button>
+                    <button class="neon-btn" data-boost="magnet">КУПИТЬ</button>
                 </div>
             </div>
         </div>
@@ -97,13 +98,13 @@
             
             <div class="roulette-container">
                 <div class="roulette-wheel" id="rouletteWheel">
-                    <div class="wheel-segment" style="--i:0">50</div>
-                    <div class="wheel-segment" style="--i:1">100</div>
-                    <div class="wheel-segment" style="--i:2">200</div>
-                    <div class="wheel-segment" style="--i:3">300</div>
-                    <div class="wheel-segment" style="--i:4">500</div>
-                    <div class="wheel-segment" style="--i:5">750</div>
-                    <div class="wheel-segment" style="--i:6">1000</div>
+                    <div class="wheel-segment" style="--i:0">100</div>
+                    <div class="wheel-segment" style="--i:1">200</div>
+                    <div class="wheel-segment" style="--i:2">300</div>
+                    <div class="wheel-segment" style="--i:3">500</div>
+                    <div class="wheel-segment" style="--i:4">750</div>
+                    <div class="wheel-segment" style="--i:5">1000</div>
+                    <div class="wheel-segment" style="--i:6">50</div>
                     <div class="wheel-segment" style="--i:7">0</div>
                 </div>
                 <div class="wheel-pointer"></div>
@@ -113,7 +114,7 @@
                 <div class="roulette-card">
                     <h3>🟢 СТАРТОВАЯ</h3>
                     <p>Ставка: 150 PZK</p>
-                    <p>Выигрыш: 100-1000 PZK</p>
+                    <p>Выигрыш: 50-1000 PZK</p>
                     <button class="neon-btn roulette-btn" id="spinBasic">КРУТИТЬ</button>
                 </div>
                 <div class="roulette-card">
