@@ -1,55 +1,174 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Pzk Clicker</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- Подключаем скрипт Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <h1 class="title">PzkClicker</h1>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-      <!-- Счётчик монет -->
-      <div class="balance"><span id="coinBalance">0</span> PzkCoins</div>
+class GameState {
+    constructor() {
+        this.coins = 0;
+        this.multiplier = 1;
+        this.afkActive = false;
+        this.randomBoostActive = false;
+        this.clickCount = 0;
+        this.load();
+    }
 
-      <!-- Кликабельная монета -->
-      <div class="coin-wrapper">
-        <div class="coin" id="clickableCoin">
-          <!-- Здесь будет фото из CSS -->
-        </div>
-      </div>
+    load() {
+        const saved = localStorage.getItem('pzkNeonState');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                this.coins = data.coins || 0;
+                this.multiplier = data.multiplier || 1;
+                this.afkActive = data.afkActive || false;
+                this.randomBoostActive = data.randomBoostActive || false;
+                this.clickCount = data.clickCount || 0;
+            } catch (e) {
+                console.error('Load error', e);
+            }
+        }
+    }
 
-      <!-- Панель бустов -->
-      <div class="boosts-panel">
-        <h2>⚡️ Бусты</h2>
-        <div class="boosts-grid">
-          <div class="boost-item" id="boostAfk">
-            <h3>💤 AFK Кликер</h3>
-            <p>+1 монета/сек</p>
-            <p class="boost-price" id="afkPrice">10</p>
-            <button class="buy-btn" data-boost="afk">Купить</button>
-          </div>
-          <div class="boost-item" id="boostDouble">
-            <h3>2️⃣ Удвоение</h3>
-            <p>Клик ×2</p>
-            <p class="boost-price" id="doublePrice">50</p>
-            <button class="buy-btn" data-boost="double">Купить</button>
-          </div>
-          <div class="boost-item" id="boostRandom">
-            <h3>🎲 Рандом</h3>
-            <p>+бонус раз в 50 кликов</p>
-            <p class="boost-price" id="randomPrice">100</p>
-            <button class="buy-btn" data-boost="random">Купить</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <script src="script.js"></script>
-  </body>
-</html>
+    save() {
+        const data = {
+            coins: this.coins,
+            multiplier: this.multiplier,
+            afkActive: this.afkActive,
+            randomBoostActive: this.randomBoostActive,
+            clickCount: this.clickCount,
+        };
+        localStorage.setItem('pzkNeonState', JSON.stringify(data));
+    }
+}
+
+class Boost {
+    constructor(price, gameState) {
+        this.price = price;
+        this.gameState = gameState;
+    }
+    buy() {
+        if (this.gameState.coins >= this.price) {
+            this.gameState.coins -= this.price;
+            this.apply();
+            this.gameState.save();
+            return true;
+        }
+        return false;
+    }
+    apply() {
+        throw new Error('Apply method required');
+    }
+}
+
+class AfkBoost extends Boost {
+    constructor(gameState) {
+        super(10, gameState);
+    }
+    apply() {
+        if (!this.gameState.afkActive) {
+            this.gameState.afkActive = true;
+            if (!window.afkInterval) {
+                window.afkInterval = setInterval(() => {
+                    if (this.gameState.afkActive) {
+                        this.gameState.coins += 1;
+                        this.gameState.save();
+                        updateUI();
+                    }
+                }, 1000);
+            }
+        }
+    }
+}
+
+class DoubleBoost extends Boost {
+    constructor(gameState) {
+        super(50, gameState);
+    }
+    apply() {
+        this.gameState.multiplier *= 2;
+    }
+}
+
+class RandomBoost extends Boost {
+    constructor(gameState) {
+        super(100, gameState);
+    }
+    apply() {
+        this.gameState.randomBoostActive = true;
+    }
+}
+
+const gameState = new GameState();
+
+const boosts = {
+    afk: new AfkBoost(gameState),
+    double: new DoubleBoost(gameState),
+    random: new RandomBoost(gameState)
+};
+
+const coinBalanceEl = document.getElementById('coinBalance');
+const clickableCoin = document.getElementById('clickableCoin');
+const afkPriceEl = document.getElementById('afkPrice');
+const doublePriceEl = document.getElementById('doublePrice');
+const randomPriceEl = document.getElementById('randomPrice');
+const buyButtons = document.querySelectorAll('.neon-btn');
+
+function updateUI() {
+    coinBalanceEl.textContent = gameState.coins;
+    
+    afkPriceEl.textContent = boosts.afk.price;
+    doublePriceEl.textContent = boosts.double.price;
+    randomPriceEl.textContent = boosts.random.price;
+    
+    buyButtons.forEach(btn => {
+        const boostType = btn.dataset.boost;
+        let price = 0;
+        if (boostType === 'afk') price = boosts.afk.price;
+        if (boostType === 'double') price = boosts.double.price;
+        if (boostType === 'random') price = boosts.random.price;
+        
+        btn.disabled = gameState.coins < price;
+    });
+}
+
+clickableCoin.addEventListener('click', () => {
+    clickableCoin.classList.add('coin-animate');
+    setTimeout(() => clickableCoin.classList.remove('coin-animate'), 300);
+
+    gameState.coins += 1 * gameState.multiplier;
+    
+    if (gameState.randomBoostActive) {
+        gameState.clickCount++;
+        if (gameState.clickCount >= 50) {
+            const bonus = Math.floor(Math.random() * 21) + 5;
+            gameState.coins += bonus;
+            gameState.clickCount = 0;
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+    }
+
+    gameState.save();
+    updateUI();
+});
+
+buyButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const boostType = e.target.dataset.boost;
+        const boost = boosts[boostType];
+        if (boost && boost.buy()) {
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI();
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+    });
+});
+
+updateUI();
+
+if (gameState.afkActive && !window.afkInterval) {
+    window.afkInterval = setInterval(() => {
+        gameState.coins += 1;
+        gameState.save();
+        updateUI();
+    }, 1000);
+}
