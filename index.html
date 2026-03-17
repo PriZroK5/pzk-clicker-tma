@@ -29,6 +29,10 @@
             <div class="energy-bar">
                 <div class="energy-fill" id="energyFill" style="width: 100%"></div>
             </div>
+            <div class="energy-charge-buttons">
+                <button class="neon-btn charge-btn" id="chargeHalf">🔋 ЗАРЯДИТЬ 50%</button>
+                <button class="neon-btn charge-btn" id="chargeFull">⚡ ЗАРЯДИТЬ 100%</button>
+            </div>
         </div>
 
         <div class="tabs">
@@ -46,13 +50,28 @@
                 <div id="floatingNumbers" class="floating-numbers-container"></div>
             </div>
 
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span>⚡ AFK УРОВЕНЬ</span>
+                    <span id="afkLevel">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>📈 AFK ДОХОД</span>
+                    <span id="afkIncome">1/сек</span>
+                </div>
+                <div class="stat-item">
+                    <span>💪 МНОЖИТЕЛЬ</span>
+                    <span id="multiplierDisplay">1x</span>
+                </div>
+            </div>
+
             <div class="boosts-panel">
                 <h2 class="neon-subtitle">⚡ PZK УСИЛИТЕЛИ ⚡</h2>
                 <div class="boosts-grid">
                     <div class="neon-boost-item" id="boostAfk">
                         <div class="boost-glow"></div>
                         <h3>💤 AFK</h3>
-                        <p>+1/сек</p>
+                        <p>+<span id="afkGain">1</span>/сек</p>
                         <div class="boost-price" id="afkPrice">10</div>
                         <button class="neon-btn" data-boost="afk">КУПИТЬ</button>
                     </div>
@@ -95,23 +114,11 @@
                     <div class="shop-price" id="superAfkPrice">500</div>
                     <button class="neon-btn" data-boost="superAfk">КУПИТЬ</button>
                 </div>
-                <div class="neon-shop-item">
-                    <h3>🔋 УРОВЕНЬ 1</h3>
-                    <p>+50 макс. энергии</p>
-                    <div class="shop-price" id="energy1Price">200</div>
-                    <button class="neon-btn" data-boost="energy1">КУПИТЬ</button>
-                </div>
-                <div class="neon-shop-item">
-                    <h3>⚡ УРОВЕНЬ 2</h3>
-                    <p>+100 макс. энергии</p>
-                    <div class="shop-price" id="energy2Price">500</div>
-                    <button class="neon-btn" data-boost="energy2">КУПИТЬ</button>
-                </div>
-                <div class="neon-shop-item">
-                    <h3>💫 УРОВЕНЬ 3</h3>
-                    <p>+200 макс. энергии</p>
-                    <div class="shop-price" id="energy3Price">1000</div>
-                    <button class="neon-btn" data-boost="energy3">КУПИТЬ</button>
+                <div class="neon-shop-item" id="energyUpgradeItem">
+                    <h3>🔋 УВЕЛИЧЕНИЕ ЭНЕРГИИ</h3>
+                    <p>Уровень <span id="energyLevel">1</span> (x<span id="energyMult">2</span>)</p>
+                    <div class="shop-price" id="energyUpgradePrice">300</div>
+                    <button class="neon-btn" data-boost="energyUpgrade">УЛУЧШИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>🎰 МАГНИТ</h3>
