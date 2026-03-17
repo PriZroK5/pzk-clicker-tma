@@ -26,19 +26,12 @@ body {
 }
 
 /* Основной фон для всех страниц */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+body {
     background-image: url('fon.jpeg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    z-index: -2;
 }
 
 /* Неоновое затемнение поверх фона */
@@ -49,13 +42,10 @@ body::after {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 50% 50%, rgba(0, 26, 51, 0.7), rgba(10, 15, 30, 0.9));
-    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 26, 51, 0.6), rgba(10, 15, 30, 0.8));
+    z-index: 0;
     pointer-events: none;
 }
-
-/* Старый неоновый фон теперь не нужен, заменяем на затемнение */
-/* .neon-background можно удалить или оставить как доп. слой */
 
 .container {
     max-width: 450px;
@@ -63,12 +53,12 @@ body::after {
     padding: 20px;
     text-align: center;
     position: relative;
-    z-index: 1;
-    background: rgba(10, 15, 30, 0.3);
-    backdrop-filter: blur(5px);
+    z-index: 2;
+    background: rgba(10, 15, 30, 0.2);
+    backdrop-filter: blur(8px);
     border-radius: 30px;
     margin: 20px;
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+    box-shadow: 0 0 40px rgba(0, 243, 255, 0.3);
     border: 1px solid rgba(0, 243, 255, 0.3);
 }
 
@@ -78,6 +68,8 @@ body::after {
     letter-spacing: 4px;
     margin-bottom: 15px;
     animation: flicker 3s infinite;
+    position: relative;
+    z-index: 3;
 }
 
 .neon-title span {
@@ -108,6 +100,7 @@ body::after {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(5px);
+    z-index: 3;
 }
 
 .neon-balance::before {
@@ -142,6 +135,7 @@ body::after {
     border: 1px solid var(--energy-color);
     box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
     backdrop-filter: blur(5px);
+    z-index: 3;
 }
 
 .energy-bar-label {
@@ -181,6 +175,7 @@ body::after {
     border: 1px solid var(--neon-blue);
     flex-wrap: wrap;
     backdrop-filter: blur(5px);
+    z-index: 3;
 }
 
 .tab-btn {
@@ -214,18 +209,18 @@ body::after {
 }
 
 .ghost-wrapper {
-    margin: 20px 0 30px;
+    margin: 30px 0 40px;
     cursor: pointer;
     position: relative;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .ghost-wrapper.disabled {
     cursor: not-allowed;
     opacity: 0.7;
-}
-
-.ghost-wrapper.disabled .neon-ghost {
-    filter: grayscale(50%);
 }
 
 .floating-numbers-container {
@@ -263,58 +258,27 @@ body::after {
 .neon-ghost {
     width: 200px;
     height: 200px;
-    margin: 0 auto;
     position: relative;
-    border-radius: 50%;
-    animation: ghostFloat 3s ease-in-out infinite, ghostGlow 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.6));
+    animation: ghostFly 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.7));
+    transform-origin: center center;
 }
 
-.neon-ghost::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(0, 243, 255, 0.4), transparent 70%);
-    z-index: -1;
-    animation: ghostPulse 2s ease-in-out infinite;
-}
-
-@keyframes ghostFloat {
-    0%, 100% {
+@keyframes ghostFly {
+    0% {
         transform: translateY(0) scale(1);
     }
     25% {
-        transform: translateY(-15px) scale(1.02);
+        transform: translateY(-25px) scale(1.05) rotate(2deg);
     }
     50% {
-        transform: translateY(5px) scale(0.98);
+        transform: translateY(15px) scale(0.98) rotate(-2deg);
     }
     75% {
-        transform: translateY(-8px) scale(1.01);
+        transform: translateY(-10px) scale(1.02) rotate(1deg);
     }
-}
-
-@keyframes ghostGlow {
-    0%, 100% {
-        filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.6));
-    }
-    50% {
-        filter: drop-shadow(0 0 40px rgba(0, 243, 255, 1));
-    }
-}
-
-@keyframes ghostPulse {
-    0%, 100% {
-        opacity: 0.5;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
+    100% {
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -322,66 +286,96 @@ body::after {
     width: 100%;
     height: 100%;
     background-image: url('vpzk.jpg');
-    background-size: cover;
+    background-size: contain;
     background-position: center;
-    border-radius: 50%;
-    border: 3px solid var(--neon-blue);
-    box-shadow: 0 0 30px var(--neon-blue);
+    background-repeat: no-repeat;
     position: relative;
-    z-index: 1;
-    animation: ghostRotate 10s linear infinite;
+    z-index: 2;
+    animation: ghostFade 3s ease-in-out infinite;
 }
 
-@keyframes ghostRotate {
-    0% {
-        transform: rotate(0deg);
+@keyframes ghostFade {
+    0%, 100% {
+        opacity: 0.9;
+        filter: brightness(1);
     }
-    100% {
-        transform: rotate(360deg);
+    50% {
+        opacity: 1;
+        filter: brightness(1.2) drop-shadow(0 0 15px rgba(0, 243, 255, 0.9));
     }
 }
 
 .ghost-glow {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(0, 243, 255, 0.3), transparent 70%);
-    animation: ghostGlowMove 3s ease-in-out infinite;
-    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.3), transparent 70%);
+    animation: ghostPulse 2s ease-in-out infinite;
+    z-index: 1;
     pointer-events: none;
+    border-radius: 50%;
 }
 
-@keyframes ghostGlowMove {
+@keyframes ghostPulse {
     0%, 100% {
         opacity: 0.3;
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
     }
     50% {
         opacity: 0.7;
-        transform: scale(1.1);
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+.ghost-trail {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.2), transparent 60%);
+    animation: ghostTrail 2s ease-in-out infinite;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+@keyframes ghostTrail {
+    0% {
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+    100% {
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 
 .ghost-animate {
-    animation: ghostClick 0.3s ease-out !important;
+    animation: ghostClick 0.4s ease-out !important;
 }
 
 @keyframes ghostClick {
     0% {
-        transform: scale(1) translateY(0);
+        transform: translateY(0) scale(1);
     }
     30% {
-        transform: scale(1.3) translateY(-20px);
-        filter: brightness(1.5);
+        transform: translateY(-30px) scale(1.3);
+        filter: brightness(1.5) drop-shadow(0 0 30px rgba(0, 243, 255, 1));
     }
     60% {
-        transform: scale(0.9) translateY(5px);
+        transform: translateY(10px) scale(0.95);
     }
     100% {
-        transform: scale(1) translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -391,6 +385,11 @@ body::after {
     margin-top: 10px;
     text-shadow: 0 0 10px #ff4444;
     animation: pulse 1s infinite;
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
 }
 
 @keyframes pulse {
@@ -403,6 +402,7 @@ body::after {
     padding-top: 20px;
     border-top: 2px solid var(--neon-blue);
     position: relative;
+    z-index: 3;
 }
 
 .neon-subtitle {
