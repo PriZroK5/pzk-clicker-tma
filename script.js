@@ -180,9 +180,14 @@ const magnetPriceEl = document.getElementById('magnetPrice');
 const buyButtons = document.querySelectorAll('.neon-btn');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
+const selectBasicBtn = document.getElementById('selectBasic');
+const selectVipBtn = document.getElementById('selectVip');
+const basicRoulette = document.getElementById('basicRoulette');
+const vipRoulette = document.getElementById('vipRoulette');
+const basicWheel = document.getElementById('basicWheel');
+const vipWheel = document.getElementById('vipWheel');
 const spinBasicBtn = document.getElementById('spinBasic');
 const spinVipBtn = document.getElementById('spinVip');
-const rouletteWheel = document.getElementById('rouletteWheel');
 const rouletteResult = document.getElementById('rouletteResult');
 
 function createFloatingNumber(value) {
@@ -212,6 +217,22 @@ tabBtns.forEach(btn => {
         document.getElementById(`${tab}-tab`).classList.add('active');
     });
 });
+
+if (selectBasicBtn && selectVipBtn) {
+    selectBasicBtn.addEventListener('click', () => {
+        selectBasicBtn.classList.add('active');
+        selectVipBtn.classList.remove('active');
+        basicRoulette.classList.add('active');
+        vipRoulette.classList.remove('active');
+    });
+
+    selectVipBtn.addEventListener('click', () => {
+        selectVipBtn.classList.add('active');
+        selectBasicBtn.classList.remove('active');
+        vipRoulette.classList.add('active');
+        basicRoulette.classList.remove('active');
+    });
+}
 
 function updateUI() {
     coinBalanceEl.textContent = gameState.coins;
@@ -280,15 +301,15 @@ buyButtons.forEach(btn => {
 });
 
 function spinRoulette(type) {
-    let cost, min, max;
+    let cost, wheel, minChance, maxChance;
+    const luckBonus = gameState.luckBoost;
+    
     if (type === 'basic') {
         cost = 150;
-        min = 50;
-        max = 1000;
+        wheel = basicWheel;
     } else {
         cost = 1000;
-        min = 2000;
-        max = 5000;
+        wheel = vipWheel;
     }
 
     if (gameState.coins < cost) {
@@ -300,17 +321,16 @@ function spinRoulette(type) {
     gameState.coins -= cost;
     updateUI();
     
-    rouletteWheel.style.transform = 'rotate(0deg)';
+    wheel.style.transform = 'rotate(0deg)';
     setTimeout(() => {
         const spins = Math.floor(Math.random() * 5) + 8;
         const degrees = spins * 360 + Math.floor(Math.random() * 360);
-        rouletteWheel.style.transform = `rotate(${degrees}deg)`;
+        wheel.style.transform = `rotate(${degrees}deg)`;
     }, 10);
 
     setTimeout(() => {
         let winAmount;
         const chance = Math.random() * 100;
-        const luckBonus = gameState.luckBoost;
         
         if (type === 'basic') {
             if (chance < 5 + luckBonus) winAmount = 1000;
@@ -318,13 +338,15 @@ function spinRoulette(type) {
             else if (chance < 30 + luckBonus) winAmount = 500;
             else if (chance < 50 + luckBonus) winAmount = 300;
             else if (chance < 75 + luckBonus) winAmount = 200;
-            else winAmount = 100;
+            else if (chance < 90 + luckBonus) winAmount = 100;
+            else winAmount = 50;
         } else {
             if (chance < 5 + luckBonus) winAmount = 5000;
-            else if (chance < 15 + luckBonus) winAmount = 4000;
-            else if (chance < 30 + luckBonus) winAmount = 3500;
-            else if (chance < 50 + luckBonus) winAmount = 3000;
-            else if (chance < 75 + luckBonus) winAmount = 2500;
+            else if (chance < 15 + luckBonus) winAmount = 4500;
+            else if (chance < 30 + luckBonus) winAmount = 4000;
+            else if (chance < 50 + luckBonus) winAmount = 3500;
+            else if (chance < 70 + luckBonus) winAmount = 3000;
+            else if (chance < 85 + luckBonus) winAmount = 2500;
             else winAmount = 2000;
         }
 
