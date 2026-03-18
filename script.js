@@ -204,7 +204,7 @@ class GameState {
     }
 
     checkLevelUp() {
-        if (this.gameLevel === 1 && this.coins >= 500000 && !this.isLevelingUp) {
+        if (this.gameLevel === 1 && this.coins >= 520000 && !this.isLevelingUp) {
             this.startLevelUpAnimation();
         }
     }
@@ -604,9 +604,9 @@ function updateUI() {
     gameState.checkLevelUp();
     
     if (gameState.gameLevel === 1) {
-        const progressPercent = (gameState.coins / 500000) * 100;
+        const progressPercent = (gameState.coins / 520000) * 100;
         if (levelProgress) levelProgress.style.width = `${Math.min(progressPercent, 100)}%`;
-        if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/500000`;
+        if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/520000`;
     }
     
     gameState.updateMaxEnergy();
