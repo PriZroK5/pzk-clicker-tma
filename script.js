@@ -3,6 +3,17 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+// GitHub Configuration
+const GITHUB_REPO = 'PriZroK5/pzk-clicker-tma';
+const GITHUB_FILE_PATH = 'stats.json';
+
+async function getGithubToken() {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return localStorage.getItem('pzk_github_token') || prompt('Введите GitHub токен:');
+    }
+    return '${PZK_TOKEN}';
+}
+
 class GameState {
     constructor() {
         this.coins = 1000;
@@ -24,7 +35,9 @@ class GameState {
         this.minigameAttempts = 1;
         this.minigameLastPlayed = null;
         this.playerName = '';
+        this.clickCounter = 0;
         this.load();
+        this.loadStatsFromGitHub();
     }
 
     load() {
@@ -62,6 +75,97 @@ class GameState {
         } else {
             this.playerName = this.getTelegramName();
             this.save();
+        }
+    }
+
+    async loadStatsFromGitHub() {
+        try {
+            const token = await getGithubToken();
+            if (!token) return;
+            
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const content = atob(data.content);
+                window.ratingsData = JSON.parse(content);
+                updateRatingUI();
+            }
+        } catch (e) {
+            console.error('Failed to load stats from GitHub', e);
+            window.ratingsData = [];
+        }
+    }
+
+    async saveStatsToGitHub() {
+        try {
+            const token = await getGithubToken();
+            if (!token) return;
+            
+            const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            let sha = null;
+            if (getResponse.ok) {
+                const data = await getResponse.json();
+                sha = data.sha;
+            }
+            
+            const stats = window.ratingsData || [];
+            
+            const existingIndex = stats.findIndex(p => p.name === this.playerName);
+            const playerData = {
+                name: this.playerName,
+                coins: this.coins,
+                clicks: this.totalClicks,
+                level: 1,
+                lastUpdate: new Date().toISOString()
+            };
+            
+            if (existingIndex >= 0) {
+                stats[existingIndex] = playerData;
+            } else {
+                stats.push(playerData);
+            }
+            
+            const sortedStats = stats
+                .sort((a, b) => b.coins - a.coins)
+                .slice(0, 50);
+            
+            window.ratingsData = sortedStats;
+            
+            const content = btoa(JSON.stringify(sortedStats, null, 2));
+            
+            const putResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Update stats for ${this.playerName}`,
+                    content: content,
+                    sha: sha
+                })
+            });
+            
+            if (putResponse.ok) {
+                console.log('Stats saved to GitHub');
+            } else {
+                console.error('Failed to save stats to GitHub');
+            }
+        } catch (e) {
+            console.error('Error saving stats to GitHub', e);
         }
     }
 
@@ -194,13 +298,11 @@ class GameState {
         
         if (!ghost || !ghostWrapper || !container || !lightningContainer) return;
         
-        // Пробуем воспроизвести музыку один раз без зацикливания
         try {
             const music = new Audio('per.mp3');
             music.volume = 0.5;
             music.loop = false;
             
-            // Если музыка не загрузится за 1 секунду, просто продолжаем без неё
             const timeout = setTimeout(() => {
                 music.src = '';
                 console.log('Музыка не загрузилась, пропускаем');
@@ -209,10 +311,6 @@ class GameState {
             music.addEventListener('canplaythrough', () => {
                 clearTimeout(timeout);
                 music.play().catch(e => console.log('Не удалось воспроизвести музыку'));
-            });
-            
-            music.addEventListener('ended', () => {
-                console.log('Музыка завершилась');
             });
             
             music.load();
@@ -229,7 +327,7 @@ class GameState {
         
         const self = this;
         let startTime = Date.now();
-        const animationDuration = 5000; // 5 секунд
+        const animationDuration = 5000;
         
         function glitchBackground() {
             if (body.classList.contains('level-1')) {
@@ -247,10 +345,8 @@ class GameState {
             const elapsed = Date.now() - startTime;
             
             if (elapsed >= animationDuration) {
-                // Анимация завершена
                 ghost.style.opacity = '0';
                 
-                // Финальные глюки
                 for (let i = 0; i < 3; i++) {
                     setTimeout(() => {
                         glitchBackground();
@@ -309,31 +405,45 @@ class GameState {
                 return;
             }
             
-            // Продолжаем анимацию - чередуем движения вверх/вниз
             const cycle = Math.floor(elapsed / 500) % 2;
             const progress = (elapsed % 500) / 500;
             
             if (cycle === 0) {
-                // Движение вниз
                 const offset = 5 * Math.sin(progress * Math.PI);
                 ghost.style.transform = `translateY(${offset}px)`;
             } else {
-                // Движение вверх
                 const offset = -5 * Math.sin(progress * Math.PI);
                 ghost.style.transform = `translateY(${offset}px)`;
             }
             
-            // Глюк фона
             glitchBackground();
             
-            // Продолжаем анимацию
             requestAnimationFrame(animate);
         }
         
-        // Запускаем анимацию
         setTimeout(() => {
             requestAnimationFrame(animate);
         }, 300);
+    }
+
+    async handleClick() {
+        this.clickCounter++;
+        
+        if (this.clickCounter >= 10) {
+            this.clickCounter = 0;
+            await this.saveStatsToGitHub();
+            updateRatingUI();
+        }
+    }
+
+    getPlayerRank() {
+        try {
+            const ratings = window.ratingsData || [];
+            const index = ratings.findIndex(r => r.name === this.playerName);
+            return index >= 0 ? index + 1 : '-';
+        } catch (e) {
+            return '-';
+        }
     }
 
     getClickGain() {
@@ -455,9 +565,45 @@ tabBtns.forEach(btn => {
         
         if (tab === 'minigame') {
             updateMinigameUI();
+        } else if (tab === 'rating') {
+            updateRatingUI();
         }
     });
 });
+
+function updateRatingUI() {
+    try {
+        const ratings = window.ratingsData || [];
+        const top10 = ratings.slice(0, 10);
+        
+        if (ratingListEl) {
+            if (top10.length === 0) {
+                ratingListEl.innerHTML = '<div class="rating-item" style="justify-content: center; padding: 20px;">Пока нет игроков в рейтинге</div>';
+            } else {
+                ratingListEl.innerHTML = top10.map((player, index) => {
+                    const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+                    const isCurrentPlayer = player.name === gameState.playerName;
+                    
+                    return `
+                        <div class="rating-item ${isCurrentPlayer ? 'current-player' : ''}">
+                            <span class="rating-rank ${rankClass}">${index + 1}</span>
+                            <span class="rating-name">${player.name}</span>
+                            <span class="rating-coins">${player.coins}</span>
+                            <span class="rating-clicks">${player.clicks}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        
+        if (playerNameEl) playerNameEl.textContent = gameState.playerName;
+        if (playerCoinsEl) playerCoinsEl.textContent = gameState.coins;
+        if (playerClicksEl) playerClicksEl.textContent = gameState.totalClicks;
+        if (playerRankEl) playerRankEl.textContent = gameState.getPlayerRank();
+    } catch (e) {
+        console.error('Rating UI update error', e);
+    }
+}
 
 function updateMinigameUI() {
     if (minigameStatus) {
@@ -614,7 +760,7 @@ function updateUI() {
     }
 }
 
-clickableGhost.addEventListener('click', () => {
+clickableGhost.addEventListener('click', async () => {
     if (gameState.currentEnergy <= 0) {
         showNoEnergyMessage();
         tg.HapticFeedback.notificationOccurred('error');
@@ -644,6 +790,8 @@ clickableGhost.addEventListener('click', () => {
         
         gameState.save();
         updateUI();
+        
+        await gameState.handleClick();
     }
 });
 
@@ -815,6 +963,7 @@ if (spinVipBtn) {
 
 updateUI();
 updateMinigameUI();
+updateRatingUI();
 
 if (gameState.afkActive && !window.afkInterval) {
     window.afkInterval = setInterval(() => {
@@ -829,3 +978,9 @@ if (gameState.afkActive && !window.afkInterval) {
 setInterval(() => {
     updateUI();
 }, 100);
+
+setInterval(() => {
+    updateRatingUI();
+}, 5000);
+
+gameState.loadStatsFromGitHub();
