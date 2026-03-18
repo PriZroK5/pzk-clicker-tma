@@ -1,21 +1,63 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pzk Clicker - Уровень 1</title>
+    <title>Pzk Clicker - Уровень 2</title>
     <meta name="theme-color" content="#0a0f1e">
     <meta name="color-scheme" content="dark">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        .level-up-notification {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -100px);
+            background: linear-gradient(45deg, #00f3ff, #ff00aa);
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            padding: 20px 40px;
+            border-radius: 50px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.8), 0 0 30px rgba(255, 0, 170, 0.8);
+            z-index: 30000;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+            border: 2px solid white;
+            animation: slideIn 0.5s ease-out forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        
+        @keyframes slideIn {
+            0% {
+                transform: translate(-50%, -100px);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            0% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -100px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
-<body class="level-1">
+<body class="level-2">
     <div class="container">
-        <div class="level-badge" id="levelBadge">УРОВЕНЬ 1</div>
+        <div class="level-badge" id="levelBadge">УРОВЕНЬ 2</div>
         
         <h1 class="neon-title">PZK<span>CLICKER</span></h1>
         
@@ -27,7 +69,7 @@
         <div class="energy-bar-container">
             <div class="energy-bar-label">
                 <span>⚡ ЭНЕРГИЯ</span>
-                <span id="energyDisplay">100/100</span>
+                <span id="energyDisplay">50/50</span>
             </div>
             <div class="energy-bar">
                 <div class="energy-fill" id="energyFill" style="width: 100%"></div>
@@ -51,7 +93,7 @@
         <div id="clicker-tab" class="tab-content active">
             <div class="ghost-wrapper" id="ghostWrapper">
                 <div class="neon-ghost" id="clickableGhost">
-                    <img src="vpzk.jpg" class="ghost-image" alt="ghost">
+                    <img src="vpzk2.jpg" class="ghost-image" alt="ghost">
                     <div class="ghost-glow"></div>
                     <div class="ghost-trail"></div>
                 </div>
@@ -77,14 +119,6 @@
                 </div>
             </div>
 
-            <div class="progress-to-next-level">
-                <div class="progress-label">ДО СЛЕДУЮЩЕГО УРОВНЯ</div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="levelProgress" style="width: 0%"></div>
-                </div>
-                <div class="progress-text" id="levelProgressText">0/1010</div>
-            </div>
-
             <div class="boosts-panel">
                 <h2 class="neon-subtitle">⚡ PZK УСИЛИТЕЛИ ⚡</h2>
                 <div class="boosts-grid">
@@ -92,21 +126,21 @@
                         <div class="boost-glow"></div>
                         <h3>💤 AFK</h3>
                         <p>+<span id="afkGain">1</span>/сек</p>
-                        <div class="boost-price" id="afkPrice">10</div>
+                        <div class="boost-price" id="afkPrice">13</div>
                         <button class="neon-btn" data-boost="afk">КУПИТЬ</button>
                     </div>
                     <div class="neon-boost-item" id="boostDouble">
                         <div class="boost-glow"></div>
                         <h3>2️⃣ ДВОЙНОЙ</h3>
                         <p>×2 клик</p>
-                        <div class="boost-price" id="doublePrice">50</div>
+                        <div class="boost-price" id="doublePrice">65</div>
                         <button class="neon-btn" data-boost="double">КУПИТЬ</button>
                     </div>
                     <div class="neon-boost-item" id="boostRandom">
                         <div class="boost-glow"></div>
                         <h3>🎲 РАНДОМ</h3>
                         <p>бонус 50 клик</p>
-                        <div class="boost-price" id="randomPrice">100</div>
+                        <div class="boost-price" id="randomPrice">130</div>
                         <button class="neon-btn" data-boost="random">КУПИТЬ</button>
                     </div>
                 </div>
@@ -119,37 +153,37 @@
                 <div class="neon-shop-item">
                     <h3>⚡ МОЩНЫЙ КЛИК</h3>
                     <p>+2 монеты за клик</p>
-                    <div class="shop-price" id="powerPrice">200</div>
+                    <div class="shop-price" id="powerPrice">260</div>
                     <button class="neon-btn" data-boost="power">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>💎 УДАЧА</h3>
                     <p>+5% к рулетке</p>
-                    <div class="shop-price" id="luckPrice">300</div>
+                    <div class="shop-price" id="luckPrice">390</div>
                     <button class="neon-btn" data-boost="luck">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>🚀 СУПЕР AFK</h3>
                     <p>+3 монеты/сек</p>
-                    <div class="shop-price" id="superAfkPrice">500</div>
+                    <div class="shop-price" id="superAfkPrice">650</div>
                     <button class="neon-btn" data-boost="superAfk">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item" id="energyUpgradeItem">
                     <h3>🔋 УВЕЛИЧЕНИЕ ЭНЕРГИИ</h3>
                     <p>Уровень <span id="energyLevel">1</span> (x<span id="energyMult">2</span>)</p>
-                    <div class="shop-price" id="energyUpgradePrice">300</div>
+                    <div class="shop-price" id="energyUpgradePrice">390</div>
                     <button class="neon-btn" data-boost="energyUpgrade">УЛУЧШИТЬ</button>
                 </div>
                 <div class="neon-shop-item" id="minigameAttemptItem">
                     <h3>🎮 ДОП. ПОПЫТКА</h3>
                     <p>+1 попытка в мини-игре</p>
-                    <div class="shop-price" id="minigameAttemptPrice">2000</div>
+                    <div class="shop-price" id="minigameAttemptPrice">2600</div>
                     <button class="neon-btn" data-boost="minigameAttempt">КУПИТЬ</button>
                 </div>
                 <div class="neon-shop-item">
                     <h3>🎰 МАГНИТ</h3>
                     <p>+10% к монетам</p>
-                    <div class="shop-price" id="magnetPrice">1500</div>
+                    <div class="shop-price" id="magnetPrice">1950</div>
                     <button class="neon-btn" data-boost="magnet">КУПИТЬ</button>
                 </div>
             </div>
@@ -160,21 +194,21 @@
             
             <div class="roulette-container">
                 <div class="roulette-wheel" id="basicWheel">
-                    <div class="wheel-segment" style="--i:0">50</div>
-                    <div class="wheel-segment" style="--i:1">100</div>
-                    <div class="wheel-segment" style="--i:2">200</div>
-                    <div class="wheel-segment" style="--i:3">300</div>
-                    <div class="wheel-segment" style="--i:4">500</div>
-                    <div class="wheel-segment" style="--i:5">750</div>
-                    <div class="wheel-segment" style="--i:6">1000</div>
+                    <div class="wheel-segment" style="--i:0">65</div>
+                    <div class="wheel-segment" style="--i:1">130</div>
+                    <div class="wheel-segment" style="--i:2">260</div>
+                    <div class="wheel-segment" style="--i:3">390</div>
+                    <div class="wheel-segment" style="--i:4">650</div>
+                    <div class="wheel-segment" style="--i:5">975</div>
+                    <div class="wheel-segment" style="--i:6">1300</div>
                     <div class="wheel-segment" style="--i:7">0</div>
                 </div>
                 <div class="wheel-pointer"></div>
             </div>
 
             <div class="roulette-info">
-                <p class="roulette-stake">СТАВКА: 150 PZK</p>
-                <p class="roulette-range">ВЫИГРЫШ: 50 - 1000 PZK</p>
+                <p class="roulette-stake">СТАВКА: 195 PZK</p>
+                <p class="roulette-range">ВЫИГРЫШ: 65 - 1300 PZK</p>
                 <button class="neon-btn roulette-btn" id="spinBasic">КРУТИТЬ</button>
             </div>
 
@@ -186,21 +220,21 @@
             
             <div class="roulette-container">
                 <div class="roulette-wheel" id="vipWheel">
-                    <div class="wheel-segment" style="--i:0">2000</div>
-                    <div class="wheel-segment" style="--i:1">2500</div>
-                    <div class="wheel-segment" style="--i:2">3000</div>
-                    <div class="wheel-segment" style="--i:3">3500</div>
-                    <div class="wheel-segment" style="--i:4">4000</div>
-                    <div class="wheel-segment" style="--i:5">4500</div>
-                    <div class="wheel-segment" style="--i:6">5000</div>
-                    <div class="wheel-segment" style="--i:7">1000</div>
+                    <div class="wheel-segment" style="--i:0">2600</div>
+                    <div class="wheel-segment" style="--i:1">3250</div>
+                    <div class="wheel-segment" style="--i:2">3900</div>
+                    <div class="wheel-segment" style="--i:3">4550</div>
+                    <div class="wheel-segment" style="--i:4">5200</div>
+                    <div class="wheel-segment" style="--i:5">5850</div>
+                    <div class="wheel-segment" style="--i:6">6500</div>
+                    <div class="wheel-segment" style="--i:7">1300</div>
                 </div>
                 <div class="wheel-pointer"></div>
             </div>
 
             <div class="roulette-info">
-                <p class="roulette-stake">СТАВКА: 1000 PZK</p>
-                <p class="roulette-range">ВЫИГРЫШ: 2000 - 5000 PZK</p>
+                <p class="roulette-stake">СТАВКА: 1300 PZK</p>
+                <p class="roulette-range">ВЫИГРЫШ: 2600 - 6500 PZK</p>
                 <button class="neon-btn roulette-btn" id="spinVip">КРУТИТЬ VIP</button>
             </div>
 
@@ -213,9 +247,9 @@
             <div id="minigamePreview" class="minigame-preview">
                 <div class="minigame-icon">🎮</div>
                 <h3 class="minigame-title">НАЙДИ СВОЙ ПРИЗ!</h3>
-                <p class="minigame-description" id="minigameDescription">
+                <p class="minigame-description">
                     Выбери один из 6 макетов.<br>
-                    Каждый скрывает случайный выигрыш от 300 до 4000 PZK!
+                    Каждый скрывает случайный выигрыш от 100 до 1600 PZK!
                 </p>
                 <div class="minigame-status" id="minigameStatus"></div>
                 <button class="neon-btn minigame-start-btn" id="startMinigame">🎮 НАЧАТЬ ИГРУ</button>
@@ -292,12 +326,12 @@
             <div style="text-align: center; padding: 20px;">
                 <h2 class="neon-subtitle" style="margin-bottom: 20px;">📋 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
                 
-                <div style="background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); border-radius: 20px; padding: 30px; margin-bottom: 20px; backdrop-filter: blur(5px);">
+                <div style="background: rgba(255, 0, 170, 0.1); border: 1px solid #ff00aa; border-radius: 20px; padding: 30px; margin-bottom: 20px; backdrop-filter: blur(5px);">
                     <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
                     <p style="color: #fff; margin-bottom: 15px; font-size: 16px;">
                         Выполняй задания каждый день и получай награды!
                     </p>
-                    <p style="color: var(--neon-blue); margin-bottom: 25px; font-size: 14px;">
+                    <p style="color: #ff00aa; margin-bottom: 25px; font-size: 14px;">
                         • Кликай по призраку<br>
                         • Трать энергию<br>
                         • Копи монеты<br>
@@ -320,6 +354,24 @@
     
     <div id="lightningContainer" class="lightning-container" style="display: none;"></div>
     
-    <script src="script.js"></script>
+    <script src="script2.js"></script>
+    <script>
+        // Показываем уведомление при загрузке страницы
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const notification = document.createElement('div');
+                notification.className = 'level-up-notification';
+                notification.textContent = '✨ МЫ ВОЗНЕСЛИСЬ? ✨';
+                document.body.appendChild(notification);
+                
+                setTimeout(function() {
+                    notification.style.animation = 'slideOut 0.5s ease-out forwards';
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 500);
+                }, 3000);
+            }, 500);
+        });
+    </script>
 </body>
 </html>

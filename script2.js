@@ -1,11 +1,11 @@
-// script.js
+// script2.js
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
 class GameState {
     constructor() {
-        this.coins = 1000;
+        this.coins = 0;
         this.multiplier = 1;
         this.afkActive = false;
         this.afkLevel = 1;
@@ -17,8 +17,8 @@ class GameState {
         this.luckBoost = 0;
         this.superAfkActive = false;
         this.magnetActive = false;
-        this.maxEnergy = 100;
-        this.currentEnergy = 100;
+        this.maxEnergy = 50;
+        this.currentEnergy = 50;
         this.energyLevel = 1;
         this.energyMultiplier = 2;
         this.minigameAttempts = 1;
@@ -32,11 +32,11 @@ class GameState {
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                if (data.gameLevel === 2) {
-                    window.location.href = 'index2.html';
+                if (data.gameLevel !== 2) {
+                    window.location.href = 'index.html';
                     return;
                 }
-                this.coins = data.coins || 1000;
+                this.coins = data.coins || 0;
                 this.multiplier = data.multiplier || 1;
                 this.afkActive = data.afkActive || false;
                 this.afkLevel = data.afkLevel || 1;
@@ -94,7 +94,7 @@ class GameState {
             minigameAttempts: this.minigameAttempts,
             minigameLastPlayed: this.minigameLastPlayed,
             playerName: this.playerName,
-            gameLevel: 1
+            gameLevel: 2
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -120,7 +120,7 @@ class GameState {
     }
 
     upgradeEnergy() {
-        const cost = 300 * Math.pow(2, this.energyLevel - 1);
+        const cost = 390 * Math.pow(2, this.energyLevel - 1);
         if (this.coins >= cost && this.energyLevel < 10) {
             this.coins -= cost;
             this.energyLevel++;
@@ -133,7 +133,7 @@ class GameState {
     }
 
     updateMaxEnergy() {
-        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        this.maxEnergy = 50 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
     }
 
     getAfkGain() {
@@ -153,7 +153,7 @@ class GameState {
     }
 
     buyMinigameAttempt() {
-        const cost = 2000;
+        const cost = 2600;
         if (this.coins >= cost && this.minigameAttempts < 2) {
             this.coins -= cost;
             this.minigameAttempts = 2;
@@ -174,190 +174,17 @@ class GameState {
     }
 
     getMinigameReward() {
-        return Math.floor(Math.random() * 3701) + 300;
-    }
-
-    checkLevelUp() {
-        if (this.coins >= 1010) {
-            this.startLevelUpAnimation();
-        }
-    }
-
-    startLevelUpAnimation() {
-        document.body.style.pointerEvents = 'none';
-        
-        const container = document.querySelector('.container');
-        const ghostWrapper = document.getElementById('ghostWrapper');
-        const lightningContainer = document.getElementById('lightningContainer');
-        const ghost = document.querySelector('.neon-ghost');
-        const body = document.body;
-        
-        if (!ghost || !ghostWrapper || !container || !lightningContainer) return;
-        
-        // Пробуем воспроизвести музыку один раз без зацикливания
-        try {
-            const music = new Audio('per.mp3');
-            music.volume = 0.5;
-            music.loop = false;
-            
-            // Если музыка не загрузится за 1 секунду, просто продолжаем без неё
-            const timeout = setTimeout(() => {
-                music.src = '';
-                console.log('Музыка не загрузилась, пропускаем');
-            }, 1000);
-            
-            music.addEventListener('canplaythrough', () => {
-                clearTimeout(timeout);
-                music.play().catch(e => console.log('Не удалось воспроизвести музыку'));
-            });
-            
-            music.addEventListener('ended', () => {
-                console.log('Музыка завершилась');
-            });
-            
-            music.load();
-        } catch (e) {
-            console.log('Ошибка с музыкой, продолжаем без неё');
-        }
-        
-        ghostWrapper.style.position = 'relative';
-        ghostWrapper.style.zIndex = '10000';
-        ghostWrapper.style.overflow = 'visible';
-        
-        ghost.style.position = 'relative';
-        ghost.style.transition = 'transform 0.1s linear';
-        
-        const self = this;
-        let startTime = Date.now();
-        const animationDuration = 5000; // 5 секунд
-        
-        function glitchBackground() {
-            if (body.classList.contains('level-1')) {
-                body.classList.remove('level-1');
-                body.classList.add('level-2');
-            } else {
-                body.classList.remove('level-2');
-                body.classList.add('level-1');
-            }
-            
-            container.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
-        }
-        
-        function animate() {
-            const elapsed = Date.now() - startTime;
-            
-            if (elapsed >= animationDuration) {
-                // Анимация завершена
-                ghost.style.opacity = '0';
-                
-                // Финальные глюки
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        glitchBackground();
-                    }, i * 50);
-                }
-                
-                lightningContainer.style.display = 'block';
-                
-                for (let i = 0; i < 5; i++) {
-                    setTimeout(() => {
-                        const flash = document.createElement('div');
-                        flash.style.position = 'fixed';
-                        flash.style.top = '0';
-                        flash.style.left = '0';
-                        flash.style.width = '100%';
-                        flash.style.height = '100%';
-                        flash.style.backgroundColor = 'white';
-                        flash.style.zIndex = '20000';
-                        flash.style.animation = 'lightningFlash 0.1s ease-out';
-                        document.body.appendChild(flash);
-                        
-                        setTimeout(() => {
-                            flash.remove();
-                        }, 100);
-                    }, i * 100);
-                }
-                
-                setTimeout(() => {
-                    const data = {
-                        coins: 0,
-                        multiplier: 1,
-                        afkActive: false,
-                        afkLevel: 1,
-                        afkBaseGain: 1,
-                        randomBoostActive: false,
-                        clickCount: 0,
-                        totalClicks: self.totalClicks,
-                        powerBoost: 0,
-                        luckBoost: 0,
-                        superAfkActive: false,
-                        magnetActive: false,
-                        energyLevel: 1,
-                        energyMultiplier: 2,
-                        currentEnergy: 50,
-                        maxEnergy: 50,
-                        minigameAttempts: 1,
-                        minigameLastPlayed: null,
-                        playerName: self.playerName,
-                        gameLevel: 2
-                    };
-                    localStorage.setItem('pzkNeonState', JSON.stringify(data));
-                    
-                    window.location.href = 'index2.html';
-                }, 600);
-                
-                return;
-            }
-            
-            // Продолжаем анимацию - чередуем движения вверх/вниз
-            const cycle = Math.floor(elapsed / 500) % 2;
-            const progress = (elapsed % 500) / 500;
-            
-            if (cycle === 0) {
-                // Движение вниз
-                const offset = 5 * Math.sin(progress * Math.PI);
-                ghost.style.transform = `translateY(${offset}px)`;
-            } else {
-                // Движение вверх
-                const offset = -5 * Math.sin(progress * Math.PI);
-                ghost.style.transform = `translateY(${offset}px)`;
-            }
-            
-            // Глюк фона
-            glitchBackground();
-            
-            // Продолжаем анимацию
-            requestAnimationFrame(animate);
-        }
-        
-        // Запускаем анимацию
-        setTimeout(() => {
-            requestAnimationFrame(animate);
-        }, 300);
+        return Math.floor(Math.random() * 1501) + 100;
     }
 
     getClickGain() {
-        let gain = 1 * this.multiplier;
+        let gain = 20 * this.multiplier;
         gain += this.powerBoost;
         return gain;
     }
 }
 
 const gameState = new GameState();
-
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes lightningFlash {
-        0% { opacity: 0; }
-        10% { opacity: 1; }
-        30% { opacity: 0.8; }
-        50% { opacity: 1; }
-        70% { opacity: 0.6; }
-        90% { opacity: 0.8; }
-        100% { opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
 
 const coinBalanceEl = document.getElementById('coinBalance');
 const clickableGhost = document.getElementById('clickableGhost');
@@ -405,8 +232,6 @@ const playerNameEl = document.getElementById('playerName');
 const playerCoinsEl = document.getElementById('playerCoins');
 const playerClicksEl = document.getElementById('playerClicks');
 const playerRankEl = document.getElementById('playerRank');
-const levelProgress = document.getElementById('levelProgress');
-const levelProgressText = document.getElementById('levelProgressText');
 
 let noEnergyMessage = null;
 let minigameActive = false;
@@ -471,10 +296,10 @@ function updateMinigameUI() {
     }
     
     if (minigameAttemptItem && minigameAttemptPriceEl) {
-        minigameAttemptPriceEl.textContent = 2000;
+        minigameAttemptPriceEl.textContent = 2600;
         const buyBtn = minigameAttemptItem.querySelector('.neon-btn');
         if (buyBtn) {
-            buyBtn.disabled = gameState.coins < 2000 || gameState.minigameAttempts >= 2;
+            buyBtn.disabled = gameState.coins < 2600 || gameState.minigameAttempts >= 2;
         }
     }
 }
@@ -531,12 +356,6 @@ minigameCards.forEach(card => {
 function updateUI() {
     coinBalanceEl.textContent = gameState.coins;
     
-    gameState.checkLevelUp();
-    
-    const progressPercent = (gameState.coins / 1010) * 100;
-    if (levelProgress) levelProgress.style.width = `${Math.min(progressPercent, 100)}%`;
-    if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/1010`;
-    
     gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
     energyDisplay.textContent = `${Math.floor(gameState.currentEnergy)}/${Math.floor(gameState.maxEnergy)}`;
@@ -554,21 +373,21 @@ function updateUI() {
     if (afkGainEl) afkGainEl.textContent = gameState.getAfkGain();
     if (totalClicksEl) totalClicksEl.textContent = gameState.totalClicks;
     
-    const afkPrice = 10 * Math.pow(2, gameState.afkLevel - 1);
+    const afkPrice = 13 * Math.pow(2, gameState.afkLevel - 1);
     if (afkPriceEl) afkPriceEl.textContent = afkPrice;
     
-    if (doublePriceEl) doublePriceEl.textContent = 50;
-    if (randomPriceEl) randomPriceEl.textContent = 100;
-    if (powerPriceEl) powerPriceEl.textContent = 200;
-    if (luckPriceEl) luckPriceEl.textContent = 300;
-    if (superAfkPriceEl) superAfkPriceEl.textContent = 500;
+    if (doublePriceEl) doublePriceEl.textContent = 65;
+    if (randomPriceEl) randomPriceEl.textContent = 130;
+    if (powerPriceEl) powerPriceEl.textContent = 260;
+    if (luckPriceEl) luckPriceEl.textContent = 390;
+    if (superAfkPriceEl) superAfkPriceEl.textContent = 650;
     if (energyLevelEl) energyLevelEl.textContent = gameState.energyLevel;
     if (energyMultEl) energyMultEl.textContent = gameState.energyMultiplier;
     
-    const energyUpgradeCost = 300 * Math.pow(2, gameState.energyLevel - 1);
+    const energyUpgradeCost = 390 * Math.pow(2, gameState.energyLevel - 1);
     if (energyUpgradePriceEl) energyUpgradePriceEl.textContent = energyUpgradeCost;
     
-    if (magnetPriceEl) magnetPriceEl.textContent = 1500;
+    if (magnetPriceEl) magnetPriceEl.textContent = 1950;
     
     buyButtons.forEach(btn => {
         const boostType = btn.dataset.boost;
@@ -580,12 +399,12 @@ function updateUI() {
             price = afkPrice;
             canBuy = true;
         }
-        if (boostType === 'double') price = 50;
-        if (boostType === 'random') price = 100;
-        if (boostType === 'power') price = 200;
-        if (boostType === 'luck') price = 300;
+        if (boostType === 'double') price = 65;
+        if (boostType === 'random') price = 130;
+        if (boostType === 'power') price = 260;
+        if (boostType === 'luck') price = 390;
         if (boostType === 'superAfk') {
-            price = 500;
+            price = 650;
             canBuy = !gameState.superAfkActive;
         }
         if (boostType === 'energyUpgrade') {
@@ -593,11 +412,11 @@ function updateUI() {
             canBuy = gameState.energyLevel < 10;
         }
         if (boostType === 'minigameAttempt') {
-            price = 2000;
+            price = 2600;
             canBuy = gameState.minigameAttempts < 2;
         }
         if (boostType === 'magnet') {
-            price = 1500;
+            price = 1950;
             canBuy = !gameState.magnetActive;
         }
         
@@ -667,28 +486,28 @@ buyButtons.forEach(btn => {
                 }, 1000);
             }
         }
-        else if (boostType === 'double' && gameState.coins >= 50) {
-            gameState.coins -= 50;
+        else if (boostType === 'double' && gameState.coins >= 65) {
+            gameState.coins -= 65;
             gameState.multiplier *= 2;
             success = true;
         }
-        else if (boostType === 'random' && gameState.coins >= 100) {
-            gameState.coins -= 100;
+        else if (boostType === 'random' && gameState.coins >= 130) {
+            gameState.coins -= 130;
             gameState.randomBoostActive = true;
             success = true;
         }
-        else if (boostType === 'power' && gameState.coins >= 200) {
-            gameState.coins -= 200;
+        else if (boostType === 'power' && gameState.coins >= 260) {
+            gameState.coins -= 260;
             gameState.powerBoost += 2;
             success = true;
         }
-        else if (boostType === 'luck' && gameState.coins >= 300) {
-            gameState.coins -= 300;
+        else if (boostType === 'luck' && gameState.coins >= 390) {
+            gameState.coins -= 390;
             gameState.luckBoost += 5;
             success = true;
         }
-        else if (boostType === 'superAfk' && gameState.coins >= 500 && !gameState.superAfkActive) {
-            gameState.coins -= 500;
+        else if (boostType === 'superAfk' && gameState.coins >= 650 && !gameState.superAfkActive) {
+            gameState.coins -= 650;
             gameState.superAfkActive = true;
             success = true;
         }
@@ -698,8 +517,8 @@ buyButtons.forEach(btn => {
         else if (boostType === 'minigameAttempt') {
             success = gameState.buyMinigameAttempt();
         }
-        else if (boostType === 'magnet' && gameState.coins >= 1500 && !gameState.magnetActive) {
-            gameState.coins -= 1500;
+        else if (boostType === 'magnet' && gameState.coins >= 1950 && !gameState.magnetActive) {
+            gameState.coins -= 1950;
             gameState.magnetActive = true;
             success = true;
         }
@@ -748,11 +567,11 @@ function spinRoulette(type) {
     const luckBonus = gameState.luckBoost;
     
     if (type === 'basic') {
-        cost = 150;
+        cost = 195;
         wheel = basicWheel;
         resultEl = basicResult;
     } else {
-        cost = 1000;
+        cost = 1300;
         wheel = vipWheel;
         resultEl = vipResult;
     }
@@ -778,21 +597,21 @@ function spinRoulette(type) {
         const chance = Math.random() * 100;
         
         if (type === 'basic') {
-            if (chance < 5 + luckBonus) winAmount = 1000;
-            else if (chance < 15 + luckBonus) winAmount = 750;
-            else if (chance < 30 + luckBonus) winAmount = 500;
-            else if (chance < 50 + luckBonus) winAmount = 300;
-            else if (chance < 75 + luckBonus) winAmount = 200;
-            else if (chance < 90 + luckBonus) winAmount = 100;
-            else winAmount = 50;
+            if (chance < 5 + luckBonus) winAmount = 1300;
+            else if (chance < 15 + luckBonus) winAmount = 975;
+            else if (chance < 30 + luckBonus) winAmount = 650;
+            else if (chance < 50 + luckBonus) winAmount = 390;
+            else if (chance < 75 + luckBonus) winAmount = 260;
+            else if (chance < 90 + luckBonus) winAmount = 130;
+            else winAmount = 65;
         } else {
-            if (chance < 5 + luckBonus) winAmount = 5000;
-            else if (chance < 15 + luckBonus) winAmount = 4500;
-            else if (chance < 30 + luckBonus) winAmount = 4000;
-            else if (chance < 50 + luckBonus) winAmount = 3500;
-            else if (chance < 70 + luckBonus) winAmount = 3000;
-            else if (chance < 85 + luckBonus) winAmount = 2500;
-            else winAmount = 2000;
+            if (chance < 5 + luckBonus) winAmount = 6500;
+            else if (chance < 15 + luckBonus) winAmount = 5850;
+            else if (chance < 30 + luckBonus) winAmount = 5200;
+            else if (chance < 50 + luckBonus) winAmount = 4550;
+            else if (chance < 70 + luckBonus) winAmount = 3900;
+            else if (chance < 85 + luckBonus) winAmount = 3250;
+            else winAmount = 2600;
         }
 
         gameState.coins += winAmount;
