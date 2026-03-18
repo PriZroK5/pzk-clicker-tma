@@ -2,14 +2,18 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+// GitHub Configuration - имя секрета изменено
 const GITHUB_REPO = 'PriZroK5/pzk-clicker-tma';
 const GITHUB_FILE_PATH = 'stats.json';
 
+// Функция для получения токена (будет подменяться при сборке)
 async function getGithubToken() {
+    // В разработке используем localStorage или prompt
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return localStorage.getItem('github_token') || prompt('Введите GitHub токен:');
+        return localStorage.getItem('pzk_github_token') || prompt('Введите GitHub токен:');
     }
-    return '${GITHUB_TOKEN}'; 
+    // На продакшене токен будет вставлен через GitHub Actions
+    return '${PZK_TOKEN}'; // Плейсхолдер для замены
 }
 
 class GameState {
