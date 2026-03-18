@@ -41,6 +41,7 @@
             <button class="tab-btn" data-tab="roulette-basic">🎲 PZK РУЛЕТКА</button>
             <button class="tab-btn" data-tab="roulette-vip">👑 VIP РУЛЕТКА</button>
             <button class="tab-btn" data-tab="minigame">🎮 МИНИ-ИГРА</button>
+            <button class="tab-btn" data-tab="rating">🏆 РЕЙТИНГ</button>
             <button class="tab-btn" data-tab="quests">📋 ЗАДАНИЯ</button>
         </div>
 
@@ -49,6 +50,7 @@
                 <div class="neon-ghost" id="clickableGhost">
                     <div class="ghost-inner"></div>
                     <div class="ghost-glow"></div>
+                    <div class="ghost-trail"></div>
                 </div>
                 <div id="floatingNumbers" class="floating-numbers-container"></div>
             </div>
@@ -65,6 +67,10 @@
                 <div class="stat-item">
                     <span>💪 МНОЖИТЕЛЬ</span>
                     <span id="multiplierDisplay">1x</span>
+                </div>
+                <div class="stat-item">
+                    <span>👆 ВСЕГО КЛИКОВ</span>
+                    <span id="totalClicks">0</span>
                 </div>
             </div>
 
@@ -237,11 +243,47 @@
             </div>
         </div>
 
+        <div id="rating-tab" class="tab-content">
+            <h2 class="neon-subtitle">🏆 ТОП-10 ИГРОКОВ</h2>
+            
+            <div class="rating-container">
+                <div class="rating-header">
+                    <span class="rating-rank">#</span>
+                    <span class="rating-name">ИМЯ</span>
+                    <span class="rating-coins">МОНЕТЫ</span>
+                    <span class="rating-clicks">КЛИКИ</span>
+                </div>
+                <div id="ratingList" class="rating-list">
+                    <!-- Рейтинг будет заполняться через JavaScript -->
+                </div>
+            </div>
+
+            <div class="player-stats">
+                <h3 class="neon-subtitle" style="font-size: 16px; margin: 20px 0 10px;">📊 ТВОЯ СТАТИСТИКА</h3>
+                <div class="player-stat-item">
+                    <span>👤 ИГРОК:</span>
+                    <span id="playerName">Загрузка...</span>
+                </div>
+                <div class="player-stat-item">
+                    <span>💰 МОНЕТЫ:</span>
+                    <span id="playerCoins">0</span>
+                </div>
+                <div class="player-stat-item">
+                    <span>👆 КЛИКИ:</span>
+                    <span id="playerClicks">0</span>
+                </div>
+                <div class="player-stat-item">
+                    <span>🏆 МЕСТО В РЕЙТИНГЕ:</span>
+                    <span id="playerRank">-</span>
+                </div>
+            </div>
+        </div>
+
         <div id="quests-tab" class="tab-content">
             <div style="text-align: center; padding: 20px;">
                 <h2 class="neon-subtitle" style="margin-bottom: 20px;">📋 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</h2>
                 
-                <div style="background: rgba(0, 243, 255, 0.05); border: 1px solid var(--neon-blue); border-radius: 20px; padding: 30px; margin-bottom: 20px;">
+                <div style="background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); border-radius: 20px; padding: 30px; margin-bottom: 20px; backdrop-filter: blur(5px);">
                     <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
                     <p style="color: #fff; margin-bottom: 15px; font-size: 16px;">
                         Выполняй задания каждый день и получай награды!
