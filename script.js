@@ -2,6 +2,16 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+const GITHUB_REPO = 'PriZroK5/pzk-clicker-tma';
+const GITHUB_FILE_PATH = 'stats.json';
+
+async function getGithubToken() {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return localStorage.getItem('github_token') || prompt('Введите GitHub токен:');
+    }
+    return '${GITHUB_TOKEN}'; 
+}
+
 class GameState {
     constructor() {
         this.coins = 1000;
@@ -11,6 +21,7 @@ class GameState {
         this.afkBaseGain = 1;
         this.randomBoostActive = false;
         this.clickCount = 0;
+        this.totalClicks = 0;
         this.powerBoost = 0;
         this.luckBoost = 0;
         this.superAfkActive = false;
@@ -21,7 +32,10 @@ class GameState {
         this.energyMultiplier = 2;
         this.minigameAttempts = 1;
         this.minigameLastPlayed = null;
+        this.playerName = '';
+        this.clickCounter = 0;
         this.load();
+        this.loadStatsFromGitHub();
     }
 
     load() {
@@ -36,6 +50,7 @@ class GameState {
                 this.afkBaseGain = data.afkBaseGain || 1;
                 this.randomBoostActive = data.randomBoostActive || false;
                 this.clickCount = data.clickCount || 0;
+                this.totalClicks = data.totalClicks || 0;
                 this.powerBoost = data.powerBoost || 0;
                 this.luckBoost = data.luckBoost || 0;
                 this.superAfkActive = data.superAfkActive || false;
@@ -44,6 +59,7 @@ class GameState {
                 this.energyMultiplier = data.energyMultiplier || 2;
                 this.minigameAttempts = data.minigameAttempts !== undefined ? data.minigameAttempts : 1;
                 this.minigameLastPlayed = data.minigameLastPlayed || null;
+                this.playerName = data.playerName || this.getTelegramName();
                 
                 this.checkDailyReset();
                 this.updateMaxEnergy();
@@ -52,7 +68,107 @@ class GameState {
             } catch (e) {
                 console.error('Load error', e);
             }
+        } else {
+            this.playerName = this.getTelegramName();
+            this.save();
         }
+    }
+
+    async loadStatsFromGitHub() {
+        try {
+            const token = await getGithubToken();
+            if (!token) return;
+            
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const content = atob(data.content);
+                window.ratingsData = JSON.parse(content);
+                updateRatingUI();
+            }
+        } catch (e) {
+            console.error('Failed to load stats from GitHub', e);
+            window.ratingsData = [];
+        }
+    }
+
+    async saveStatsToGitHub() {
+        try {
+            const token = await getGithubToken();
+            if (!token) return;
+            
+            const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            let sha = null;
+            if (getResponse.ok) {
+                const data = await getResponse.json();
+                sha = data.sha;
+            }
+            
+            const stats = window.ratingsData || [];
+            
+            const existingIndex = stats.findIndex(p => p.name === this.playerName);
+            const playerData = {
+                name: this.playerName,
+                coins: this.coins,
+                clicks: this.totalClicks,
+                lastUpdate: new Date().toISOString()
+            };
+            
+            if (existingIndex >= 0) {
+                stats[existingIndex] = playerData;
+            } else {
+                stats.push(playerData);
+            }
+            
+            const sortedStats = stats
+                .sort((a, b) => b.coins - a.coins)
+                .slice(0, 50);
+            
+            window.ratingsData = sortedStats;
+            
+            const content = btoa(JSON.stringify(sortedStats, null, 2));
+            
+            const putResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Update stats for ${this.playerName}`,
+                    content: content,
+                    sha: sha
+                })
+            });
+            
+            if (putResponse.ok) {
+                console.log('Stats saved to GitHub');
+            } else {
+                console.error('Failed to save stats to GitHub');
+            }
+        } catch (e) {
+            console.error('Error saving stats to GitHub', e);
+        }
+    }
+
+    getTelegramName() {
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            return tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username || 'Игрок';
+        }
+        return 'Игрок';
     }
 
     checkDailyReset() {
@@ -79,6 +195,7 @@ class GameState {
             afkBaseGain: this.afkBaseGain,
             randomBoostActive: this.randomBoostActive,
             clickCount: this.clickCount,
+            totalClicks: this.totalClicks,
             powerBoost: this.powerBoost,
             luckBoost: this.luckBoost,
             superAfkActive: this.superAfkActive,
@@ -88,7 +205,8 @@ class GameState {
             currentEnergy: this.currentEnergy,
             maxEnergy: this.maxEnergy,
             minigameAttempts: this.minigameAttempts,
-            minigameLastPlayed: this.minigameLastPlayed
+            minigameLastPlayed: this.minigameLastPlayed,
+            playerName: this.playerName
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -169,6 +287,25 @@ class GameState {
             return true;
         }
         return false;
+    }
+
+    async handleClick() {
+        this.clickCounter++;
+        
+        if (this.clickCounter >= 10) {
+            this.clickCounter = 0;
+            await this.saveStatsToGitHub();
+        }
+    }
+
+    getPlayerRank() {
+        try {
+            const ratings = window.ratingsData || [];
+            const index = ratings.findIndex(r => r.name === this.playerName);
+            return index >= 0 ? index + 1 : '-';
+        } catch (e) {
+            return '-';
+        }
     }
 }
 
@@ -356,6 +493,12 @@ const minigameOverlay = document.getElementById('minigameOverlay');
 const winAmountEl = document.getElementById('winAmount');
 const minigameCards = document.querySelectorAll('.minigame-card');
 const minigameStatus = document.getElementById('minigameStatus');
+const totalClicksEl = document.getElementById('totalClicks');
+const ratingListEl = document.getElementById('ratingList');
+const playerNameEl = document.getElementById('playerName');
+const playerCoinsEl = document.getElementById('playerCoins');
+const playerClicksEl = document.getElementById('playerClicks');
+const playerRankEl = document.getElementById('playerRank');
 
 let noEnergyMessage = null;
 let minigameActive = false;
@@ -404,9 +547,45 @@ tabBtns.forEach(btn => {
         
         if (tab === 'minigame') {
             updateMinigameUI();
+        } else if (tab === 'rating') {
+            updateRatingUI();
         }
     });
 });
+
+function updateRatingUI() {
+    try {
+        const ratings = window.ratingsData || [];
+        const top10 = ratings.slice(0, 10);
+        
+        if (ratingListEl) {
+            if (top10.length === 0) {
+                ratingListEl.innerHTML = '<div class="rating-item" style="justify-content: center; padding: 20px;">Пока нет игроков в рейтинге</div>';
+            } else {
+                ratingListEl.innerHTML = top10.map((player, index) => {
+                    const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+                    const isCurrentPlayer = player.name === gameState.playerName;
+                    
+                    return `
+                        <div class="rating-item ${isCurrentPlayer ? 'current-player' : ''}">
+                            <span class="rating-rank ${rankClass}">${index + 1}</span>
+                            <span class="rating-name">${player.name}</span>
+                            <span class="rating-coins">${player.coins}</span>
+                            <span class="rating-clicks">${player.clicks}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        
+        if (playerNameEl) playerNameEl.textContent = gameState.playerName;
+        if (playerCoinsEl) playerCoinsEl.textContent = gameState.coins;
+        if (playerClicksEl) playerClicksEl.textContent = gameState.totalClicks;
+        if (playerRankEl) playerRankEl.textContent = gameState.getPlayerRank();
+    } catch (e) {
+        console.error('Rating UI update error', e);
+    }
+}
 
 function updateMinigameUI() {
     if (minigameStatus) {
@@ -495,6 +674,7 @@ function updateUI() {
     if (afkIncomeEl) afkIncomeEl.textContent = `${gameState.getAfkGain()}/сек`;
     if (multiplierDisplay) multiplierDisplay.textContent = `${gameState.multiplier}x`;
     if (afkGainEl) afkGainEl.textContent = gameState.getAfkGain();
+    if (totalClicksEl) totalClicksEl.textContent = gameState.totalClicks;
     
     boosts.afk.price = 10 * Math.pow(2, gameState.afkLevel - 1);
     boosts.energyUpgrade.price = gameState.getEnergyUpgradeCost();
@@ -555,7 +735,7 @@ function updateUI() {
     }
 }
 
-clickableGhost.addEventListener('click', () => {
+clickableGhost.addEventListener('click', async () => {
     if (gameState.currentEnergy <= 0) {
         showNoEnergyMessage();
         tg.HapticFeedback.notificationOccurred('error');
@@ -570,6 +750,7 @@ clickableGhost.addEventListener('click', () => {
     
     if (gameState.useEnergy(1)) {
         gameState.coins += gain;
+        gameState.totalClicks++;
         createFloatingNumber(gain);
         
         if (gameState.randomBoostActive) {
@@ -586,6 +767,8 @@ clickableGhost.addEventListener('click', () => {
 
     gameState.save();
     updateUI();
+    
+    await gameState.handleClick();
 });
 
 buyButtons.forEach(btn => {
@@ -701,16 +884,20 @@ if (spinVipBtn) {
     spinVipBtn.addEventListener('click', () => spinRoulette('vip'));
 }
 
-// Инициализация
 updateUI();
 updateMinigameUI();
+updateRatingUI();
 
-// Запуск AFK интервала если активен
 if (gameState.afkActive) {
     new AfkBoost(gameState).startAfkInterval();
 }
 
-// Обновление UI каждые 100мс
 setInterval(() => {
     updateUI();
 }, 100);
+
+setInterval(() => {
+    updateRatingUI();
+}, 5000);
+
+gameState.loadStatsFromGitHub();
