@@ -48,7 +48,7 @@
         <div id="clicker-tab" class="tab-content active">
             <div class="ghost-wrapper" id="ghostWrapper">
                 <div class="neon-ghost" id="clickableGhost">
-                    <div class="ghost-inner"></div>
+                    <div class="ghost-inner" id="ghostImage"></div>
                     <div class="ghost-glow"></div>
                     <div class="ghost-trail"></div>
                 </div>
@@ -72,6 +72,14 @@
                     <span>👆 ВСЕГО КЛИКОВ</span>
                     <span id="totalClicks">0</span>
                 </div>
+            </div>
+
+            <div class="progress-to-next-level">
+                <div class="progress-label">ДО СЛЕДУЮЩЕГО УРОВНЯ</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="levelProgress" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="levelProgressText">0/1500</div>
             </div>
 
             <div class="boosts-panel">
@@ -202,7 +210,7 @@
             <div id="minigamePreview" class="minigame-preview">
                 <div class="minigame-icon">🎮</div>
                 <h3 class="minigame-title">НАЙДИ СВОЙ ПРИЗ!</h3>
-                <p class="minigame-description">
+                <p class="minigame-description" id="minigameDescription">
                     Выбери один из 6 макетов.<br>
                     Каждый скрывает случайный выигрыш от 300 до 4000 PZK!
                 </p>
@@ -253,9 +261,7 @@
                     <span class="rating-coins">МОНЕТЫ</span>
                     <span class="rating-clicks">КЛИКИ</span>
                 </div>
-                <div id="ratingList" class="rating-list">
-                    <!-- Рейтинг будет заполняться через JavaScript -->
-                </div>
+                <div id="ratingList" class="rating-list"></div>
             </div>
 
             <div class="player-stats">
@@ -309,7 +315,6 @@
         </div>
     </div>
     
-    <div class="neon-background"></div>
     <script src="script.js"></script>
 </body>
 </html>
