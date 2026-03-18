@@ -24,6 +24,12 @@ class GameState {
         this.minigameAttempts = 1;
         this.minigameLastPlayed = null;
         this.playerName = '';
+<<<<<<< HEAD
+=======
+        this.gameLevel = 1;
+        this.baseClickGain = 1;
+        this.isLevelingUp = false;
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
         this.load();
     }
 
@@ -32,10 +38,13 @@ class GameState {
         if (saved) {
             try {
                 const data = JSON.parse(saved);
+<<<<<<< HEAD
                 if (data.gameLevel === 2) {
                     window.location.href = 'index2.html';
                     return;
                 }
+=======
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
                 this.coins = data.coins || 1000;
                 this.multiplier = data.multiplier || 1;
                 this.afkActive = data.afkActive || false;
@@ -53,6 +62,11 @@ class GameState {
                 this.minigameAttempts = data.minigameAttempts !== undefined ? data.minigameAttempts : 1;
                 this.minigameLastPlayed = data.minigameLastPlayed || null;
                 this.playerName = data.playerName || this.getTelegramName();
+<<<<<<< HEAD
+=======
+                this.gameLevel = data.gameLevel || 1;
+                this.baseClickGain = data.baseClickGain || 1;
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
                 
                 this.updateMaxEnergy();
                 this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
@@ -63,6 +77,8 @@ class GameState {
             this.playerName = this.getTelegramName();
             this.save();
         }
+        
+        this.applyLevelTheme();
     }
 
     getTelegramName() {
@@ -94,7 +110,12 @@ class GameState {
             minigameAttempts: this.minigameAttempts,
             minigameLastPlayed: this.minigameLastPlayed,
             playerName: this.playerName,
+<<<<<<< HEAD
             gameLevel: 1
+=======
+            gameLevel: this.gameLevel,
+            baseClickGain: this.baseClickGain
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -132,8 +153,23 @@ class GameState {
         return false;
     }
 
+<<<<<<< HEAD
+=======
+    getEnergyUpgradeCost() {
+        let baseCost = 300 * Math.pow(2, this.energyLevel - 1);
+        if (this.gameLevel === 2) {
+            baseCost = Math.floor(baseCost * 1.3);
+        }
+        return baseCost;
+    }
+
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
     updateMaxEnergy() {
-        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        if (this.gameLevel === 1) {
+            this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        } else {
+            this.maxEnergy = 50 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        }
     }
 
     getAfkGain() {
@@ -152,8 +188,15 @@ class GameState {
         return false;
     }
 
+    getBoostPrice(basePrice) {
+        if (this.gameLevel === 2) {
+            return Math.floor(basePrice * 1.3);
+        }
+        return basePrice;
+    }
+
     buyMinigameAttempt() {
-        const cost = 2000;
+        const cost = this.gameLevel === 1 ? 2000 : 2600;
         if (this.coins >= cost && this.minigameAttempts < 2) {
             this.coins -= cost;
             this.minigameAttempts = 2;
@@ -172,14 +215,115 @@ class GameState {
         }
         return false;
     }
+<<<<<<< HEAD
+=======
+
+    getMinigameReward() {
+        if (this.gameLevel === 1) {
+            return Math.floor(Math.random() * 3701) + 300;
+        } else {
+            return Math.floor(Math.random() * 1501) + 100;
+        }
+    }
+
+    checkLevelUp() {
+        if (this.gameLevel === 1 && this.coins >= 520000 && !this.isLevelingUp) {
+            this.startLevelUpAnimation();
+        }
+    }
+
+    startLevelUpAnimation() {
+        this.isLevelingUp = true;
+        
+        document.body.classList.add('level-up-blackout');
+        
+        const lightning = document.createElement('div');
+        lightning.className = 'lightning-effect';
+        document.body.appendChild(lightning);
+        
+        setTimeout(() => {
+            this.gameLevel = 2;
+            this.coins = 0;
+            this.multiplier = 1;
+            this.afkActive = false;
+            this.afkLevel = 1;
+            this.afkBaseGain = 1;
+            this.randomBoostActive = false;
+            this.clickCount = 0;
+            this.powerBoost = 0;
+            this.luckBoost = 0;
+            this.superAfkActive = false;
+            this.magnetActive = false;
+            this.energyLevel = 1;
+            this.currentEnergy = 50;
+            this.maxEnergy = 50;
+            this.baseClickGain = 20;
+            
+            if (window.afkInterval) {
+                clearInterval(window.afkInterval);
+                window.afkInterval = null;
+            }
+            
+            this.applyLevelTheme();
+            this.save();
+            
+            document.body.classList.remove('level-up-blackout');
+            lightning.remove();
+            
+            this.isLevelingUp = false;
+            
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI();
+            updateMinigameUI();
+            
+            alert('ПОЗДРАВЛЯЕМ! Вы достигли 2 уровня! Все бусты сброшены, но теперь каждый клик дает 20 монет!');
+        }, 2000);
+    }
+
+    applyLevelTheme() {
+        document.body.classList.remove('level-1', 'level-2');
+        document.body.classList.add(`level-${this.gameLevel}`);
+        
+        const levelBadge = document.getElementById('levelBadge');
+        if (levelBadge) {
+            levelBadge.textContent = `УРОВЕНЬ ${this.gameLevel}`;
+        }
+        
+        const minigameDescription = document.getElementById('minigameDescription');
+        if (minigameDescription) {
+            if (this.gameLevel === 1) {
+                minigameDescription.innerHTML = 'Выбери один из 6 макетов.<br>Каждый скрывает случайный выигрыш от 300 до 4000 PZK!';
+            } else {
+                minigameDescription.innerHTML = 'Выбери один из 6 макетов.<br>Каждый скрывает случайный выигрыш от 100 до 1600 PZK!';
+            }
+        }
+    }
+
+    getClickGain() {
+        let gain = this.baseClickGain * this.multiplier;
+        gain += this.powerBoost;
+        return gain;
+    }
+}
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 
     getMinigameReward() {
         return Math.floor(Math.random() * 3701) + 300;
     }
 
+<<<<<<< HEAD
     checkLevelUp() {
         if (this.coins >= 1010) {
             this.startLevelUpAnimation();
+=======
+class AfkBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(10 * Math.pow(2, gameState.afkLevel - 1)), gameState);
+    }
+    apply() {
+        if (!this.gameState.afkActive) {
+            this.gameState.afkActive = true;
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
         }
     }
 
@@ -219,6 +363,7 @@ class GameState {
         } catch (e) {
             console.log('Ошибка с музыкой, продолжаем без неё');
         }
+<<<<<<< HEAD
         
         ghostWrapper.style.position = 'relative';
         ghostWrapper.style.zIndex = '10000';
@@ -241,6 +386,70 @@ class GameState {
             }
             
             container.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+=======
+        window.afkInterval = setInterval(() => {
+            if (this.gameState.afkActive && !this.gameState.isLevelingUp) {
+                const gain = this.gameState.getAfkGain();
+                this.gameState.coins += gain;
+                createFloatingNumber(gain);
+                this.gameState.save();
+                updateUI();
+            }
+        }, 1000);
+    }
+}
+
+class DoubleBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(50), gameState);
+    }
+    apply() {
+        this.gameState.multiplier *= 2;
+        return true;
+    }
+}
+
+class RandomBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(100), gameState);
+    }
+    apply() {
+        this.gameState.randomBoostActive = true;
+        return true;
+    }
+}
+
+class PowerBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(200), gameState);
+    }
+    apply() {
+        this.gameState.powerBoost += 2;
+        return true;
+    }
+}
+
+class LuckBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(300), gameState);
+    }
+    apply() {
+        this.gameState.luckBoost += 5;
+        return true;
+    }
+}
+
+class SuperAfkBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(500), gameState);
+    }
+    apply() {
+        this.gameState.superAfkActive = true;
+        if (this.gameState.afkActive) {
+            clearInterval(window.afkInterval);
+            window.afkInterval = null;
+            new AfkBoost(this.gameState).startAfkInterval();
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
         }
         
         function animate() {
@@ -336,10 +545,38 @@ class GameState {
         }, 300);
     }
 
+<<<<<<< HEAD
     getClickGain() {
         let gain = 1 * this.multiplier;
         gain += this.powerBoost;
         return gain;
+=======
+class EnergyUpgradeBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getEnergyUpgradeCost(), gameState);
+    }
+    apply() {
+        return this.gameState.upgradeEnergy();
+    }
+}
+
+class MinigameAttemptBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.gameLevel === 1 ? 2000 : 2600, gameState);
+    }
+    apply() {
+        return this.gameState.buyMinigameAttempt();
+    }
+}
+
+class MagnetBoost extends Boost {
+    constructor(gameState) {
+        super(gameState.getBoostPrice(1500), gameState);
+    }
+    apply() {
+        this.gameState.magnetActive = true;
+        return true;
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
     }
 }
 
@@ -529,13 +766,23 @@ minigameCards.forEach(card => {
 });
 
 function updateUI() {
+    if (gameState.isLevelingUp) return;
+    
     coinBalanceEl.textContent = gameState.coins;
     
     gameState.checkLevelUp();
     
+<<<<<<< HEAD
     const progressPercent = (gameState.coins / 1010) * 100;
     if (levelProgress) levelProgress.style.width = `${Math.min(progressPercent, 100)}%`;
     if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/1010`;
+=======
+    if (gameState.gameLevel === 1) {
+        const progressPercent = (gameState.coins / 520000) * 100;
+        if (levelProgress) levelProgress.style.width = `${Math.min(progressPercent, 100)}%`;
+        if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/520000`;
+    }
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
     
     gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
@@ -554,8 +801,13 @@ function updateUI() {
     if (afkGainEl) afkGainEl.textContent = gameState.getAfkGain();
     if (totalClicksEl) totalClicksEl.textContent = gameState.totalClicks;
     
+<<<<<<< HEAD
     const afkPrice = 10 * Math.pow(2, gameState.afkLevel - 1);
     if (afkPriceEl) afkPriceEl.textContent = afkPrice;
+=======
+    boosts.afk.price = gameState.getBoostPrice(10 * Math.pow(2, gameState.afkLevel - 1));
+    boosts.energyUpgrade.price = gameState.getEnergyUpgradeCost();
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
     
     if (doublePriceEl) doublePriceEl.textContent = 50;
     if (randomPriceEl) randomPriceEl.textContent = 100;
@@ -615,6 +867,7 @@ function updateUI() {
 }
 
 clickableGhost.addEventListener('click', () => {
+    if (gameState.isLevelingUp) return;
     if (gameState.currentEnergy <= 0) {
         showNoEnergyMessage();
         tg.HapticFeedback.notificationOccurred('error');
@@ -649,6 +902,7 @@ clickableGhost.addEventListener('click', () => {
 
 buyButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
+        if (gameState.isLevelingUp) return;
         const boostType = e.target.dataset.boost;
         if (!boostType) return;
         
@@ -719,6 +973,7 @@ buyButtons.forEach(btn => {
 
 if (chargeHalfBtn) {
     chargeHalfBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
         if (gameState.chargeEnergy(0.5)) {
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
@@ -730,6 +985,7 @@ if (chargeHalfBtn) {
 
 if (chargeFullBtn) {
     chargeFullBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
         if (gameState.chargeEnergy(1)) {
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
@@ -740,19 +996,24 @@ if (chargeFullBtn) {
 }
 
 if (startMinigameBtn) {
-    startMinigameBtn.addEventListener('click', startMinigame);
+    startMinigameBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
+        startMinigame();
+    });
 }
 
 function spinRoulette(type) {
+    if (gameState.isLevelingUp) return;
+    
     let cost, wheel, resultEl;
     const luckBonus = gameState.luckBoost;
     
     if (type === 'basic') {
-        cost = 150;
+        cost = gameState.gameLevel === 1 ? 150 : 195;
         wheel = basicWheel;
         resultEl = basicResult;
     } else {
-        cost = 1000;
+        cost = gameState.gameLevel === 1 ? 1000 : 1300;
         wheel = vipWheel;
         resultEl = vipResult;
     }
@@ -778,21 +1039,21 @@ function spinRoulette(type) {
         const chance = Math.random() * 100;
         
         if (type === 'basic') {
-            if (chance < 5 + luckBonus) winAmount = 1000;
-            else if (chance < 15 + luckBonus) winAmount = 750;
-            else if (chance < 30 + luckBonus) winAmount = 500;
-            else if (chance < 50 + luckBonus) winAmount = 300;
-            else if (chance < 75 + luckBonus) winAmount = 200;
-            else if (chance < 90 + luckBonus) winAmount = 100;
-            else winAmount = 50;
+            if (chance < 5 + luckBonus) winAmount = gameState.gameLevel === 1 ? 1000 : 1300;
+            else if (chance < 15 + luckBonus) winAmount = gameState.gameLevel === 1 ? 750 : 975;
+            else if (chance < 30 + luckBonus) winAmount = gameState.gameLevel === 1 ? 500 : 650;
+            else if (chance < 50 + luckBonus) winAmount = gameState.gameLevel === 1 ? 300 : 390;
+            else if (chance < 75 + luckBonus) winAmount = gameState.gameLevel === 1 ? 200 : 260;
+            else if (chance < 90 + luckBonus) winAmount = gameState.gameLevel === 1 ? 100 : 130;
+            else winAmount = gameState.gameLevel === 1 ? 50 : 65;
         } else {
-            if (chance < 5 + luckBonus) winAmount = 5000;
-            else if (chance < 15 + luckBonus) winAmount = 4500;
-            else if (chance < 30 + luckBonus) winAmount = 4000;
-            else if (chance < 50 + luckBonus) winAmount = 3500;
-            else if (chance < 70 + luckBonus) winAmount = 3000;
-            else if (chance < 85 + luckBonus) winAmount = 2500;
-            else winAmount = 2000;
+            if (chance < 5 + luckBonus) winAmount = gameState.gameLevel === 1 ? 5000 : 6500;
+            else if (chance < 15 + luckBonus) winAmount = gameState.gameLevel === 1 ? 4500 : 5850;
+            else if (chance < 30 + luckBonus) winAmount = gameState.gameLevel === 1 ? 4000 : 5200;
+            else if (chance < 50 + luckBonus) winAmount = gameState.gameLevel === 1 ? 3500 : 4550;
+            else if (chance < 70 + luckBonus) winAmount = gameState.gameLevel === 1 ? 3000 : 3900;
+            else if (chance < 85 + luckBonus) winAmount = gameState.gameLevel === 1 ? 2500 : 3250;
+            else winAmount = gameState.gameLevel === 1 ? 2000 : 2600;
         }
 
         gameState.coins += winAmount;
@@ -816,6 +1077,7 @@ if (spinVipBtn) {
 updateUI();
 updateMinigameUI();
 
+<<<<<<< HEAD
 if (gameState.afkActive && !window.afkInterval) {
     window.afkInterval = setInterval(() => {
         const gain = gameState.getAfkGain();
@@ -824,6 +1086,10 @@ if (gameState.afkActive && !window.afkInterval) {
         gameState.save();
         updateUI();
     }, 1000);
+=======
+if (gameState.afkActive) {
+    new AfkBoost(gameState).startAfkInterval();
+>>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 setInterval(() => {
