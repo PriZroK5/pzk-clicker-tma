@@ -8,10 +8,7 @@
     --energy-glow: 0 0 10px #ffaa00, 0 0 20px #ffaa00;
     --ghost-glow: 0 0 30px rgba(0, 243, 255, 0.8), 0 0 60px rgba(0, 243, 255, 0.4);
     --level-2-color: #ff00aa;
-<<<<<<< HEAD
-=======
     --lightning-color: #ffffff;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 * {
@@ -32,7 +29,6 @@ body {
     transition: background-color 0.5s ease;
 }
 
-<<<<<<< HEAD
 body.level-1 .container {
     background-image: url('fon.jpeg');
     background-size: cover;
@@ -45,7 +41,8 @@ body.level-2 .container {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-=======
+}
+
 body.level-up-blackout {
     background-color: #000 !important;
 }
@@ -141,7 +138,6 @@ body.level-up-blackout .neon-ghost {
     100% {
         opacity: 0;
     }
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 body::after {
@@ -169,7 +165,6 @@ body::after {
     margin: 20px;
     box-shadow: 0 0 40px rgba(0, 243, 255, 0.3);
     border: 1px solid rgba(0, 243, 255, 0.3);
-<<<<<<< HEAD
     overflow: visible;
 }
 
@@ -186,7 +181,6 @@ body.level-2 .container {
     height: 100%;
     z-index: 9999;
     pointer-events: none;
-=======
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
@@ -204,7 +198,6 @@ body.level-2 .container {
     background-repeat: no-repeat;
     border-color: #ff00aa;
     box-shadow: 0 0 40px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .level-badge {
@@ -217,14 +210,12 @@ body.level-2 .container {
     font-weight: 700;
     margin-bottom: 10px;
     backdrop-filter: blur(5px);
-<<<<<<< HEAD
 }
 
 body.level-2 .level-badge {
     border-color: var(--level-2-color);
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -232,7 +223,6 @@ body.level-2 .level-badge {
     border-color: #ff00aa;
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .neon-title {
@@ -252,13 +242,10 @@ body.level-2 .level-badge {
 }
 
 body.level-2 .neon-title span {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color), 0 0 20px var(--level-2-color), 0 0 40px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa, 0 0 20px #ff00aa, 0 0 40px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 @keyframes flicker {
@@ -323,13 +310,10 @@ body.level-2 .neon-balance {
 }
 
 body.level-2 .currency {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .energy-bar-container {
@@ -416,13 +400,10 @@ body.level-2 .tabs {
 }
 
 body.level-2 .tab-btn.active {
-<<<<<<< HEAD
     background: var(--level-2-color);
     box-shadow: 0 0 10px var(--level-2-color);
-=======
     background: #ff00aa;
     box-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .tab-content {
@@ -441,13 +422,10 @@ body.level-2 .tab-btn.active {
     display: flex;
     justify-content: center;
     align-items: center;
-<<<<<<< HEAD
     z-index: 4;
     overflow: visible;
-=======
     transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 4;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .ghost-wrapper.disabled {
@@ -517,12 +495,10 @@ body.level-2 .floating-number {
     z-index: 2;
     animation: ghostFly 3s ease-in-out infinite;
     filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.7));
-<<<<<<< HEAD
 }
 
 body.level-2 .ghost-image {
     filter: drop-shadow(0 0 20px var(--level-2-color));
-=======
     transform-origin: center center;
     transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 5;
@@ -530,7 +506,7 @@ body.level-2 .ghost-image {
 
 body.level-2 .neon-ghost {
     filter: drop-shadow(0 0 20px #ff00aa);
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
+
 }
 
 @keyframes ghostFly {
@@ -551,8 +527,6 @@ body.level-2 .neon-ghost {
     }
 }
 
-<<<<<<< HEAD
-=======
 .ghost-inner {
     width: 100%;
     height: 100%;
@@ -583,7 +557,6 @@ body.level-2 .ghost-inner {
     }
 }
 
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 .ghost-glow {
     position: absolute;
     top: 50%;
@@ -714,18 +687,15 @@ body.level-2 .ghost-trail {
     border: 1px solid var(--neon-blue);
     border-radius: 15px;
     backdrop-filter: blur(5px);
-<<<<<<< HEAD
 }
 
 body.level-2 .progress-to-next-level {
     border-color: var(--level-2-color);
-=======
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 body.level-2 .progress-to-next-level {
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .progress-label {
@@ -736,11 +706,8 @@ body.level-2 .progress-to-next-level {
 }
 
 body.level-2 .progress-label {
-<<<<<<< HEAD
     color: var(--level-2-color);
-=======
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .progress-bar-container {
@@ -760,11 +727,8 @@ body.level-2 .progress-label {
 }
 
 body.level-2 .progress-bar-fill {
-<<<<<<< HEAD
     background: linear-gradient(90deg, var(--level-2-color), #ff0066);
-=======
     background: linear-gradient(90deg, #ff00aa, #ff0066);
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .progress-text {
@@ -799,13 +763,10 @@ body.level-2 .boosts-panel {
 }
 
 body.level-2 .neon-subtitle {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .boosts-grid, .shop-grid {
@@ -827,11 +788,8 @@ body.level-2 .neon-subtitle {
 }
 
 body.level-2 .neon-boost-item, body.level-2 .neon-shop-item {
-<<<<<<< HEAD
     border-color: var(--level-2-color);
-=======
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .neon-boost-item:hover, .neon-shop-item:hover {
@@ -886,13 +844,10 @@ body.level-2 .boost-glow {
 }
 
 body.level-2 .boost-price, body.level-2 .shop-price {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .boost-price::after, .shop-price::after {
@@ -922,13 +877,10 @@ body.level-2 .boost-price, body.level-2 .shop-price {
 }
 
 body.level-2 .neon-btn {
-<<<<<<< HEAD
     color: var(--level-2-color);
     border-color: var(--level-2-color);
-=======
     color: #ff00aa;
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .neon-btn:hover:not(:disabled) {
@@ -938,15 +890,12 @@ body.level-2 .neon-btn {
 }
 
 body.level-2 .neon-btn:hover:not(:disabled) {
-<<<<<<< HEAD
     background: var(--level-2-color);
     color: var(--neon-dark);
     box-shadow: 0 0 10px var(--level-2-color);
-=======
     background: #ff00aa;
     color: var(--neon-dark);
     box-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .neon-btn:active:not(:disabled) {
@@ -983,13 +932,10 @@ body.level-2 .neon-btn:disabled {
 }
 
 body.level-2 .roulette-wheel {
-<<<<<<< HEAD
     border-color: var(--level-2-color);
     box-shadow: 0 0 10px var(--level-2-color);
-=======
     border-color: #ff00aa;
     box-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .wheel-segment {
@@ -1015,11 +961,8 @@ body.level-2 .roulette-wheel {
 }
 
 body.level-2 .wheel-segment {
-<<<<<<< HEAD
     border-color: var(--level-2-color);
-=======
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .wheel-segment:nth-child(odd) {
@@ -1041,13 +984,10 @@ body.level-2 .wheel-segment {
 }
 
 body.level-2 .wheel-pointer {
-<<<<<<< HEAD
     border-top-color: var(--level-2-color);
     filter: drop-shadow(0 0 10px var(--level-2-color));
-=======
     border-top-color: #ff00aa;
     filter: drop-shadow(0 0 10px #ff00aa);
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .roulette-info {
@@ -1078,13 +1018,10 @@ body.level-2 .roulette-info {
 }
 
 body.level-2 .roulette-stake {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .roulette-range {
@@ -1163,13 +1100,10 @@ body.level-2 .minigame-preview {
 }
 
 body.level-2 .minigame-title {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 10px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .minigame-description {
@@ -1188,11 +1122,8 @@ body.level-2 .minigame-title {
 }
 
 body.level-2 .minigame-status {
-<<<<<<< HEAD
     color: var(--level-2-color);
-=======
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .minigame-start-btn {
@@ -1224,11 +1155,8 @@ body.level-2 .minigame-status {
 }
 
 body.level-2 .minigame-card {
-<<<<<<< HEAD
     border-color: var(--level-2-color);
-=======
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .minigame-card:hover {
@@ -1271,13 +1199,10 @@ body.level-2 .minigame-card {
 }
 
 body.level-2 .minigame-popup {
-<<<<<<< HEAD
     border-color: var(--level-2-color);
     box-shadow: 0 0 30px var(--level-2-color);
-=======
     border-color: #ff00aa;
     box-shadow: 0 0 30px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 @keyframes popupAppear {
@@ -1308,13 +1233,10 @@ body.level-2 .minigame-popup {
 }
 
 body.level-2 .win-amount {
-<<<<<<< HEAD
     color: var(--level-2-color);
     text-shadow: 0 0 20px var(--level-2-color);
-=======
     color: #ff00aa;
     text-shadow: 0 0 20px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 @keyframes winPulse {
@@ -1369,11 +1291,8 @@ body.level-2 .stats-panel {
 }
 
 body.level-2 .stat-item span:first-child {
-<<<<<<< HEAD
     color: var(--level-2-color);
-=======
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .stat-item span:last-child {
@@ -1402,18 +1321,15 @@ body.level-2 .stat-item span:first-child {
     padding: 15px;
     margin: 20px 0;
     backdrop-filter: blur(5px);
-<<<<<<< HEAD
 }
 
 body.level-2 .rating-container {
     border-color: var(--level-2-color);
-=======
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 body.level-2 .rating-container {
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .rating-header {
@@ -1429,13 +1345,10 @@ body.level-2 .rating-container {
 }
 
 body.level-2 .rating-header {
-<<<<<<< HEAD
     border-bottom-color: var(--level-2-color);
     color: var(--level-2-color);
-=======
     border-bottom-color: #ff00aa;
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .rating-list {
@@ -1463,10 +1376,8 @@ body.level-2 .rating-list::-webkit-scrollbar-thumb {
 <<<<<<< HEAD
     background: var(--level-2-color);
     box-shadow: 0 0 10px var(--level-2-color);
-=======
     background: #ff00aa;
     box-shadow: 0 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .rating-item {
@@ -1490,13 +1401,10 @@ body.level-2 .rating-list::-webkit-scrollbar-thumb {
 }
 
 body.level-2 .rating-item.current-player {
-<<<<<<< HEAD
     border-left-color: var(--level-2-color);
     box-shadow: -5px 0 10px var(--level-2-color);
-=======
     border-left-color: #ff00aa;
     box-shadow: -5px 0 10px #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .rating-rank {
@@ -1533,11 +1441,8 @@ body.level-2 .rating-item.current-player {
 }
 
 body.level-2 .rating-coins {
-<<<<<<< HEAD
     color: var(--level-2-color);
-=======
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .rating-clicks {
@@ -1552,18 +1457,15 @@ body.level-2 .rating-coins {
     padding: 20px;
     margin-top: 20px;
     backdrop-filter: blur(5px);
-<<<<<<< HEAD
 }
 
 body.level-2 .player-stats {
     border-color: var(--level-2-color);
-=======
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 body.level-2 .player-stats {
     border-color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .player-stat-item {
@@ -1584,11 +1486,8 @@ body.level-2 .player-stats {
 }
 
 body.level-2 .player-stat-item span:first-child {
-<<<<<<< HEAD
     color: var(--level-2-color);
-=======
     color: #ff00aa;
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
 }
 
 .player-stat-item span:last-child {
@@ -1637,5 +1536,3 @@ body.level-2 .player-stat-item span:first-child {
     object-fit: contain;
     display: block;
 }
-=======
->>>>>>> bc7c9fe27458c1deb447bc9c01118b2d85dfc1d7
