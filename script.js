@@ -2,20 +2,6 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// GitHub Configuration - имя секрета изменено
-const GITHUB_REPO = 'PriZroK5/pzk-clicker-tma';
-const GITHUB_FILE_PATH = 'stats.json';
-
-// Функция для получения токена (будет подменяться при сборке)
-async function getGithubToken() {
-    // В разработке используем localStorage или prompt
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return localStorage.getItem('pzk_github_token') || prompt('Введите GitHub токен:');
-    }
-    // На продакшене токен будет вставлен через GitHub Actions
-    return '${PZK_TOKEN}'; // Плейсхолдер для замены
-}
-
 class GameState {
     constructor() {
         this.coins = 1000;
@@ -37,9 +23,10 @@ class GameState {
         this.minigameAttempts = 1;
         this.minigameLastPlayed = null;
         this.playerName = '';
-        this.clickCounter = 0;
+        this.gameLevel = 1;
+        this.baseClickGain = 1;
+        this.isLevelingUp = false;
         this.load();
-        this.loadStatsFromGitHub();
     }
 
     load() {
@@ -47,7 +34,7 @@ class GameState {
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                this.coins = data.coins || 0;
+                this.coins = data.coins || 1000;
                 this.multiplier = data.multiplier || 1;
                 this.afkActive = data.afkActive || false;
                 this.afkLevel = data.afkLevel || 1;
@@ -64,11 +51,11 @@ class GameState {
                 this.minigameAttempts = data.minigameAttempts !== undefined ? data.minigameAttempts : 1;
                 this.minigameLastPlayed = data.minigameLastPlayed || null;
                 this.playerName = data.playerName || this.getTelegramName();
+                this.gameLevel = data.gameLevel || 1;
+                this.baseClickGain = data.baseClickGain || 1;
                 
-                this.checkDailyReset();
                 this.updateMaxEnergy();
                 this.currentEnergy = data.currentEnergy !== undefined ? data.currentEnergy : this.maxEnergy;
-                if (this.currentEnergy > this.maxEnergy) this.currentEnergy = this.maxEnergy;
             } catch (e) {
                 console.error('Load error', e);
             }
@@ -76,96 +63,8 @@ class GameState {
             this.playerName = this.getTelegramName();
             this.save();
         }
-    }
-
-    async loadStatsFromGitHub() {
-        try {
-            const token = await getGithubToken();
-            if (!token) return;
-            
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                const content = atob(data.content);
-                window.ratingsData = JSON.parse(content);
-                updateRatingUI();
-            }
-        } catch (e) {
-            console.error('Failed to load stats from GitHub', e);
-            window.ratingsData = [];
-        }
-    }
-
-    async saveStatsToGitHub() {
-        try {
-            const token = await getGithubToken();
-            if (!token) return;
-            
-            const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            let sha = null;
-            if (getResponse.ok) {
-                const data = await getResponse.json();
-                sha = data.sha;
-            }
-            
-            const stats = window.ratingsData || [];
-            
-            const existingIndex = stats.findIndex(p => p.name === this.playerName);
-            const playerData = {
-                name: this.playerName,
-                coins: this.coins,
-                clicks: this.totalClicks,
-                lastUpdate: new Date().toISOString()
-            };
-            
-            if (existingIndex >= 0) {
-                stats[existingIndex] = playerData;
-            } else {
-                stats.push(playerData);
-            }
-            
-            const sortedStats = stats
-                .sort((a, b) => b.coins - a.coins)
-                .slice(0, 50);
-            
-            window.ratingsData = sortedStats;
-            
-            const content = btoa(JSON.stringify(sortedStats, null, 2));
-            
-            const putResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: `Update stats for ${this.playerName}`,
-                    content: content,
-                    sha: sha
-                })
-            });
-            
-            if (putResponse.ok) {
-                console.log('Stats saved to GitHub');
-            } else {
-                console.error('Failed to save stats to GitHub');
-            }
-        } catch (e) {
-            console.error('Error saving stats to GitHub', e);
-        }
+        
+        this.applyLevelTheme();
     }
 
     getTelegramName() {
@@ -173,20 +72,6 @@ class GameState {
             return tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username || 'Игрок';
         }
         return 'Игрок';
-    }
-
-    checkDailyReset() {
-        if (this.minigameLastPlayed) {
-            const lastPlayed = new Date(this.minigameLastPlayed);
-            const now = new Date();
-            
-            if (now.getDate() !== lastPlayed.getDate() || 
-                now.getMonth() !== lastPlayed.getMonth() || 
-                now.getFullYear() !== lastPlayed.getFullYear()) {
-                this.minigameAttempts = 1;
-                this.minigameLastPlayed = null;
-            }
-        }
     }
 
     save() {
@@ -210,7 +95,9 @@ class GameState {
             maxEnergy: this.maxEnergy,
             minigameAttempts: this.minigameAttempts,
             minigameLastPlayed: this.minigameLastPlayed,
-            playerName: this.playerName
+            playerName: this.playerName,
+            gameLevel: this.gameLevel,
+            baseClickGain: this.baseClickGain
         };
         localStorage.setItem('pzkNeonState', JSON.stringify(data));
     }
@@ -249,11 +136,19 @@ class GameState {
     }
 
     getEnergyUpgradeCost() {
-        return 300 * Math.pow(2, this.energyLevel - 1);
+        let baseCost = 300 * Math.pow(2, this.energyLevel - 1);
+        if (this.gameLevel === 2) {
+            baseCost = Math.floor(baseCost * 1.3);
+        }
+        return baseCost;
     }
 
     updateMaxEnergy() {
-        this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        if (this.gameLevel === 1) {
+            this.maxEnergy = 100 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        } else {
+            this.maxEnergy = 50 * Math.pow(this.energyMultiplier, this.energyLevel - 1);
+        }
     }
 
     getAfkGain() {
@@ -272,8 +167,15 @@ class GameState {
         return false;
     }
 
+    getBoostPrice(basePrice) {
+        if (this.gameLevel === 2) {
+            return Math.floor(basePrice * 1.3);
+        }
+        return basePrice;
+    }
+
     buyMinigameAttempt() {
-        const cost = 2000;
+        const cost = this.gameLevel === 1 ? 2000 : 2600;
         if (this.coins >= cost && this.minigameAttempts < 2) {
             this.coins -= cost;
             this.minigameAttempts = 2;
@@ -293,23 +195,91 @@ class GameState {
         return false;
     }
 
-    async handleClick() {
-        this.clickCounter++;
-        
-        if (this.clickCounter >= 10) {
-            this.clickCounter = 0;
-            await this.saveStatsToGitHub();
+    getMinigameReward() {
+        if (this.gameLevel === 1) {
+            return Math.floor(Math.random() * 3701) + 300;
+        } else {
+            return Math.floor(Math.random() * 1501) + 100;
         }
     }
 
-    getPlayerRank() {
-        try {
-            const ratings = window.ratingsData || [];
-            const index = ratings.findIndex(r => r.name === this.playerName);
-            return index >= 0 ? index + 1 : '-';
-        } catch (e) {
-            return '-';
+    checkLevelUp() {
+        if (this.gameLevel === 1 && this.coins >= 500000 && !this.isLevelingUp) {
+            this.startLevelUpAnimation();
         }
+    }
+
+    startLevelUpAnimation() {
+        this.isLevelingUp = true;
+        
+        document.body.classList.add('level-up-blackout');
+        
+        const lightning = document.createElement('div');
+        lightning.className = 'lightning-effect';
+        document.body.appendChild(lightning);
+        
+        setTimeout(() => {
+            this.gameLevel = 2;
+            this.coins = 0;
+            this.multiplier = 1;
+            this.afkActive = false;
+            this.afkLevel = 1;
+            this.afkBaseGain = 1;
+            this.randomBoostActive = false;
+            this.clickCount = 0;
+            this.powerBoost = 0;
+            this.luckBoost = 0;
+            this.superAfkActive = false;
+            this.magnetActive = false;
+            this.energyLevel = 1;
+            this.currentEnergy = 50;
+            this.maxEnergy = 50;
+            this.baseClickGain = 20;
+            
+            if (window.afkInterval) {
+                clearInterval(window.afkInterval);
+                window.afkInterval = null;
+            }
+            
+            this.applyLevelTheme();
+            this.save();
+            
+            document.body.classList.remove('level-up-blackout');
+            lightning.remove();
+            
+            this.isLevelingUp = false;
+            
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI();
+            updateMinigameUI();
+            
+            alert('ПОЗДРАВЛЯЕМ! Вы достигли 2 уровня! Все бусты сброшены, но теперь каждый клик дает 20 монет!');
+        }, 2000);
+    }
+
+    applyLevelTheme() {
+        document.body.classList.remove('level-1', 'level-2');
+        document.body.classList.add(`level-${this.gameLevel}`);
+        
+        const levelBadge = document.getElementById('levelBadge');
+        if (levelBadge) {
+            levelBadge.textContent = `УРОВЕНЬ ${this.gameLevel}`;
+        }
+        
+        const minigameDescription = document.getElementById('minigameDescription');
+        if (minigameDescription) {
+            if (this.gameLevel === 1) {
+                minigameDescription.innerHTML = 'Выбери один из 6 макетов.<br>Каждый скрывает случайный выигрыш от 300 до 4000 PZK!';
+            } else {
+                minigameDescription.innerHTML = 'Выбери один из 6 макетов.<br>Каждый скрывает случайный выигрыш от 100 до 1600 PZK!';
+            }
+        }
+    }
+
+    getClickGain() {
+        let gain = this.baseClickGain * this.multiplier;
+        gain += this.powerBoost;
+        return gain;
     }
 }
 
@@ -334,7 +304,7 @@ class Boost {
 
 class AfkBoost extends Boost {
     constructor(gameState) {
-        super(10 * Math.pow(2, gameState.afkLevel - 1), gameState);
+        super(gameState.getBoostPrice(10 * Math.pow(2, gameState.afkLevel - 1)), gameState);
     }
     apply() {
         if (!this.gameState.afkActive) {
@@ -349,7 +319,7 @@ class AfkBoost extends Boost {
             clearInterval(window.afkInterval);
         }
         window.afkInterval = setInterval(() => {
-            if (this.gameState.afkActive) {
+            if (this.gameState.afkActive && !this.gameState.isLevelingUp) {
                 const gain = this.gameState.getAfkGain();
                 this.gameState.coins += gain;
                 createFloatingNumber(gain);
@@ -362,7 +332,7 @@ class AfkBoost extends Boost {
 
 class DoubleBoost extends Boost {
     constructor(gameState) {
-        super(50, gameState);
+        super(gameState.getBoostPrice(50), gameState);
     }
     apply() {
         this.gameState.multiplier *= 2;
@@ -372,7 +342,7 @@ class DoubleBoost extends Boost {
 
 class RandomBoost extends Boost {
     constructor(gameState) {
-        super(100, gameState);
+        super(gameState.getBoostPrice(100), gameState);
     }
     apply() {
         this.gameState.randomBoostActive = true;
@@ -382,7 +352,7 @@ class RandomBoost extends Boost {
 
 class PowerBoost extends Boost {
     constructor(gameState) {
-        super(200, gameState);
+        super(gameState.getBoostPrice(200), gameState);
     }
     apply() {
         this.gameState.powerBoost += 2;
@@ -392,7 +362,7 @@ class PowerBoost extends Boost {
 
 class LuckBoost extends Boost {
     constructor(gameState) {
-        super(300, gameState);
+        super(gameState.getBoostPrice(300), gameState);
     }
     apply() {
         this.gameState.luckBoost += 5;
@@ -402,7 +372,7 @@ class LuckBoost extends Boost {
 
 class SuperAfkBoost extends Boost {
     constructor(gameState) {
-        super(500, gameState);
+        super(gameState.getBoostPrice(500), gameState);
     }
     apply() {
         this.gameState.superAfkActive = true;
@@ -426,7 +396,7 @@ class EnergyUpgradeBoost extends Boost {
 
 class MinigameAttemptBoost extends Boost {
     constructor(gameState) {
-        super(2000, gameState);
+        super(gameState.gameLevel === 1 ? 2000 : 2600, gameState);
     }
     apply() {
         return this.gameState.buyMinigameAttempt();
@@ -435,7 +405,7 @@ class MinigameAttemptBoost extends Boost {
 
 class MagnetBoost extends Boost {
     constructor(gameState) {
-        super(1500, gameState);
+        super(gameState.getBoostPrice(1500), gameState);
     }
     apply() {
         this.gameState.magnetActive = true;
@@ -503,6 +473,8 @@ const playerNameEl = document.getElementById('playerName');
 const playerCoinsEl = document.getElementById('playerCoins');
 const playerClicksEl = document.getElementById('playerClicks');
 const playerRankEl = document.getElementById('playerRank');
+const levelProgress = document.getElementById('levelProgress');
+const levelProgressText = document.getElementById('levelProgressText');
 
 let noEnergyMessage = null;
 let minigameActive = false;
@@ -551,45 +523,9 @@ tabBtns.forEach(btn => {
         
         if (tab === 'minigame') {
             updateMinigameUI();
-        } else if (tab === 'rating') {
-            updateRatingUI();
         }
     });
 });
-
-function updateRatingUI() {
-    try {
-        const ratings = window.ratingsData || [];
-        const top10 = ratings.slice(0, 10);
-        
-        if (ratingListEl) {
-            if (top10.length === 0) {
-                ratingListEl.innerHTML = '<div class="rating-item" style="justify-content: center; padding: 20px;">Пока нет игроков в рейтинге</div>';
-            } else {
-                ratingListEl.innerHTML = top10.map((player, index) => {
-                    const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-                    const isCurrentPlayer = player.name === gameState.playerName;
-                    
-                    return `
-                        <div class="rating-item ${isCurrentPlayer ? 'current-player' : ''}">
-                            <span class="rating-rank ${rankClass}">${index + 1}</span>
-                            <span class="rating-name">${player.name}</span>
-                            <span class="rating-coins">${player.coins}</span>
-                            <span class="rating-clicks">${player.clicks}</span>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-        
-        if (playerNameEl) playerNameEl.textContent = gameState.playerName;
-        if (playerCoinsEl) playerCoinsEl.textContent = gameState.coins;
-        if (playerClicksEl) playerClicksEl.textContent = gameState.totalClicks;
-        if (playerRankEl) playerRankEl.textContent = gameState.getPlayerRank();
-    } catch (e) {
-        console.error('Rating UI update error', e);
-    }
-}
 
 function updateMinigameUI() {
     if (minigameStatus) {
@@ -621,7 +557,7 @@ function startMinigame() {
     
     const values = [];
     for (let i = 0; i < 6; i++) {
-        values.push(Math.floor(Math.random() * 3701) + 300);
+        values.push(gameState.getMinigameReward());
     }
     
     minigameCards.forEach((card, index) => {
@@ -661,7 +597,17 @@ minigameCards.forEach(card => {
 });
 
 function updateUI() {
+    if (gameState.isLevelingUp) return;
+    
     coinBalanceEl.textContent = gameState.coins;
+    
+    gameState.checkLevelUp();
+    
+    if (gameState.gameLevel === 1) {
+        const progressPercent = (gameState.coins / 500000) * 100;
+        if (levelProgress) levelProgress.style.width = `${Math.min(progressPercent, 100)}%`;
+        if (levelProgressText) levelProgressText.textContent = `${gameState.coins}/500000`;
+    }
     
     gameState.updateMaxEnergy();
     const energyPercent = (gameState.currentEnergy / gameState.maxEnergy) * 100;
@@ -680,7 +626,7 @@ function updateUI() {
     if (afkGainEl) afkGainEl.textContent = gameState.getAfkGain();
     if (totalClicksEl) totalClicksEl.textContent = gameState.totalClicks;
     
-    boosts.afk.price = 10 * Math.pow(2, gameState.afkLevel - 1);
+    boosts.afk.price = gameState.getBoostPrice(10 * Math.pow(2, gameState.afkLevel - 1));
     boosts.energyUpgrade.price = gameState.getEnergyUpgradeCost();
     
     if (afkPriceEl) afkPriceEl.textContent = boosts.afk.price;
@@ -739,7 +685,8 @@ function updateUI() {
     }
 }
 
-clickableGhost.addEventListener('click', async () => {
+clickableGhost.addEventListener('click', () => {
+    if (gameState.isLevelingUp) return;
     if (gameState.currentEnergy <= 0) {
         showNoEnergyMessage();
         tg.HapticFeedback.notificationOccurred('error');
@@ -749,8 +696,7 @@ clickableGhost.addEventListener('click', async () => {
     clickableGhost.classList.add('ghost-animate');
     setTimeout(() => clickableGhost.classList.remove('ghost-animate'), 300);
 
-    let gain = 1 * gameState.multiplier;
-    gain += gameState.powerBoost;
+    let gain = gameState.getClickGain();
     
     if (gameState.useEnergy(1)) {
         gameState.coins += gain;
@@ -767,16 +713,15 @@ clickableGhost.addEventListener('click', async () => {
                 tg.HapticFeedback.impactOccurred('medium');
             }
         }
+        
+        gameState.save();
+        updateUI();
     }
-
-    gameState.save();
-    updateUI();
-    
-    await gameState.handleClick();
 });
 
 buyButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
+        if (gameState.isLevelingUp) return;
         const boostType = e.target.dataset.boost;
         if (!boostType) return;
         const boost = boosts[boostType];
@@ -794,6 +739,7 @@ buyButtons.forEach(btn => {
 
 if (chargeHalfBtn) {
     chargeHalfBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
         if (gameState.chargeEnergy(0.5)) {
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
@@ -805,6 +751,7 @@ if (chargeHalfBtn) {
 
 if (chargeFullBtn) {
     chargeFullBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
         if (gameState.chargeEnergy(1)) {
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
@@ -815,19 +762,24 @@ if (chargeFullBtn) {
 }
 
 if (startMinigameBtn) {
-    startMinigameBtn.addEventListener('click', startMinigame);
+    startMinigameBtn.addEventListener('click', () => {
+        if (gameState.isLevelingUp) return;
+        startMinigame();
+    });
 }
 
 function spinRoulette(type) {
+    if (gameState.isLevelingUp) return;
+    
     let cost, wheel, resultEl;
     const luckBonus = gameState.luckBoost;
     
     if (type === 'basic') {
-        cost = 150;
+        cost = gameState.gameLevel === 1 ? 150 : 195;
         wheel = basicWheel;
         resultEl = basicResult;
     } else {
-        cost = 1000;
+        cost = gameState.gameLevel === 1 ? 1000 : 1300;
         wheel = vipWheel;
         resultEl = vipResult;
     }
@@ -853,21 +805,21 @@ function spinRoulette(type) {
         const chance = Math.random() * 100;
         
         if (type === 'basic') {
-            if (chance < 5 + luckBonus) winAmount = 1000;
-            else if (chance < 15 + luckBonus) winAmount = 750;
-            else if (chance < 30 + luckBonus) winAmount = 500;
-            else if (chance < 50 + luckBonus) winAmount = 300;
-            else if (chance < 75 + luckBonus) winAmount = 200;
-            else if (chance < 90 + luckBonus) winAmount = 100;
-            else winAmount = 50;
+            if (chance < 5 + luckBonus) winAmount = gameState.gameLevel === 1 ? 1000 : 1300;
+            else if (chance < 15 + luckBonus) winAmount = gameState.gameLevel === 1 ? 750 : 975;
+            else if (chance < 30 + luckBonus) winAmount = gameState.gameLevel === 1 ? 500 : 650;
+            else if (chance < 50 + luckBonus) winAmount = gameState.gameLevel === 1 ? 300 : 390;
+            else if (chance < 75 + luckBonus) winAmount = gameState.gameLevel === 1 ? 200 : 260;
+            else if (chance < 90 + luckBonus) winAmount = gameState.gameLevel === 1 ? 100 : 130;
+            else winAmount = gameState.gameLevel === 1 ? 50 : 65;
         } else {
-            if (chance < 5 + luckBonus) winAmount = 5000;
-            else if (chance < 15 + luckBonus) winAmount = 4500;
-            else if (chance < 30 + luckBonus) winAmount = 4000;
-            else if (chance < 50 + luckBonus) winAmount = 3500;
-            else if (chance < 70 + luckBonus) winAmount = 3000;
-            else if (chance < 85 + luckBonus) winAmount = 2500;
-            else winAmount = 2000;
+            if (chance < 5 + luckBonus) winAmount = gameState.gameLevel === 1 ? 5000 : 6500;
+            else if (chance < 15 + luckBonus) winAmount = gameState.gameLevel === 1 ? 4500 : 5850;
+            else if (chance < 30 + luckBonus) winAmount = gameState.gameLevel === 1 ? 4000 : 5200;
+            else if (chance < 50 + luckBonus) winAmount = gameState.gameLevel === 1 ? 3500 : 4550;
+            else if (chance < 70 + luckBonus) winAmount = gameState.gameLevel === 1 ? 3000 : 3900;
+            else if (chance < 85 + luckBonus) winAmount = gameState.gameLevel === 1 ? 2500 : 3250;
+            else winAmount = gameState.gameLevel === 1 ? 2000 : 2600;
         }
 
         gameState.coins += winAmount;
@@ -890,7 +842,6 @@ if (spinVipBtn) {
 
 updateUI();
 updateMinigameUI();
-updateRatingUI();
 
 if (gameState.afkActive) {
     new AfkBoost(gameState).startAfkInterval();
@@ -899,9 +850,3 @@ if (gameState.afkActive) {
 setInterval(() => {
     updateUI();
 }, 100);
-
-setInterval(() => {
-    updateRatingUI();
-}, 5000);
-
-gameState.loadStatsFromGitHub();
