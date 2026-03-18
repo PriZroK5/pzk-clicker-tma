@@ -3,16 +3,8 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// GitHub Configuration
-const GITHUB_REPO = 'PriZroK5/pzk-clicker-tma';
-const GITHUB_FILE_PATH = 'stats.json';
-
-async function getGithubToken() {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return localStorage.getItem('pzk_github_token') || prompt('Введите GitHub токен:');
-    }
-    return '${PZK_TOKEN}';
-}
+// Настройки сервера - ЗАМЕНИ НА СВОЙ IP!
+const SERVER_URL = 'http://192.168.1.98:3000'; // ← СЮДА ВСТАВЬ СВОЙ IP
 
 class GameState {
     constructor() {
@@ -37,7 +29,7 @@ class GameState {
         this.playerName = '';
         this.clickCounter = 0;
         this.load();
-        this.loadStatsFromGitHub();
+        this.loadRatingFromServer();
     }
 
     load() {
@@ -78,94 +70,53 @@ class GameState {
         }
     }
 
-    async loadStatsFromGitHub() {
+    async loadRatingFromServer() {
         try {
-            const token = await getGithubToken();
-            if (!token) return;
-            
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                const content = atob(data.content);
-                window.ratingsData = JSON.parse(content);
+            // Загружаем топ-10
+            const topResponse = await fetch(`${SERVER_URL}/api/rating/top`);
+            if (topResponse.ok) {
+                window.ratingsData = await topResponse.json();
                 updateRatingUI();
             }
+            
+            // Загружаем данные текущего игрока
+            const playerResponse = await fetch(`${SERVER_URL}/api/rating/player/${encodeURIComponent(this.playerName)}`);
+            if (playerResponse.ok) {
+                const playerData = await playerResponse.json();
+                // Не обновляем монеты с сервера, только ранг
+                window.playerRank = playerData.rank;
+            }
         } catch (e) {
-            console.error('Failed to load stats from GitHub', e);
+            console.error('Failed to load rating from server', e);
             window.ratingsData = [];
         }
     }
 
-    async saveStatsToGitHub() {
+    async saveToServer() {
         try {
-            const token = await getGithubToken();
-            if (!token) return;
-            
-            const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
+            const response = await fetch(`${SERVER_URL}/api/rating/update`, {
+                method: 'POST',
                 headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            let sha = null;
-            if (getResponse.ok) {
-                const data = await getResponse.json();
-                sha = data.sha;
-            }
-            
-            const stats = window.ratingsData || [];
-            
-            const existingIndex = stats.findIndex(p => p.name === this.playerName);
-            const playerData = {
-                name: this.playerName,
-                coins: this.coins,
-                clicks: this.totalClicks,
-                level: 1,
-                lastUpdate: new Date().toISOString()
-            };
-            
-            if (existingIndex >= 0) {
-                stats[existingIndex] = playerData;
-            } else {
-                stats.push(playerData);
-            }
-            
-            const sortedStats = stats
-                .sort((a, b) => b.coins - a.coins)
-                .slice(0, 50);
-            
-            window.ratingsData = sortedStats;
-            
-            const content = btoa(JSON.stringify(sortedStats, null, 2));
-            
-            const putResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: `Update stats for ${this.playerName}`,
-                    content: content,
-                    sha: sha
+                    name: this.playerName,
+                    coins: this.coins,
+                    clicks: this.totalClicks,
+                    level: 1
                 })
             });
             
-            if (putResponse.ok) {
-                console.log('Stats saved to GitHub');
-            } else {
-                console.error('Failed to save stats to GitHub');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.top10) {
+                    window.ratingsData = data.top10;
+                    updateRatingUI();
+                }
+                console.log('Stats saved to server');
             }
         } catch (e) {
-            console.error('Error saving stats to GitHub', e);
+            console.error('Failed to save to server', e);
         }
     }
 
@@ -431,19 +382,12 @@ class GameState {
         
         if (this.clickCounter >= 10) {
             this.clickCounter = 0;
-            await this.saveStatsToGitHub();
-            updateRatingUI();
+            await this.saveToServer();
         }
     }
 
     getPlayerRank() {
-        try {
-            const ratings = window.ratingsData || [];
-            const index = ratings.findIndex(r => r.name === this.playerName);
-            return index >= 0 ? index + 1 : '-';
-        } catch (e) {
-            return '-';
-        }
+        return window.playerRank || '-';
     }
 
     getClickGain() {
@@ -981,6 +925,7 @@ setInterval(() => {
 
 setInterval(() => {
     updateRatingUI();
+    gameState.loadRatingFromServer();
 }, 5000);
 
-gameState.loadStatsFromGitHub();
+gameState.loadRatingFromServer();
